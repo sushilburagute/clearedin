@@ -1,6 +1,6 @@
 # 03 — Taxonomy and deterministic visibility policy
 
-Status: unassigned; no implementation started by this brief.
+Status: implementation complete; see [handoff and validation](../evidence/03-taxonomy-and-policy.md). Provider evaluation and release calibration remain pending.
 
 ## Dependencies
 

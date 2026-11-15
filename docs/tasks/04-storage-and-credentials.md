@@ -1,6 +1,6 @@
 # 04 — Storage, credentials, and durable usage accounting
 
-Status: unassigned; no implementation started by this brief.
+Status: injected storage implementation complete; see [handoff and validation](../evidence/04-storage-and-credentials.md). Production credential enablement remains gated on task 02's pending browser evidence.
 
 ## Dependencies
 

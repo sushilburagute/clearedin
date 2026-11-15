@@ -5,7 +5,9 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./fake-classifier": "./src/fake-classifier/index.ts"
+    "./fake-classifier": "./src/fake-classifier/index.ts",
+    "./policy": "./src/policy/index.ts",
+    "./storage": "./src/storage/index.ts"
   },
   "dependencies": {
     "@clearedin/contracts": "workspace:*",

@@ -1,6 +1,6 @@
 # ClearedIn
 
-A TypeScript monorepo for a user-controlled LinkedIn feed filter. This repository currently contains the **task 01 development foundation**, not a working filtering product.
+A TypeScript monorepo for a user-controlled LinkedIn feed filter. The foundation, pure taxonomy/policy, and injected storage primitives are implemented. Browser feasibility has partial evidence; runtime filtering and providers remain future work.
 
 ## Setup
 
@@ -52,10 +52,12 @@ pnpm --filter @clearedin/extension dev:firefox
 - `apps/extension`: WXT/React popup, options, background, and feed-scoped content entrypoints. The background/content scripts are inert; no posts are read and no provider requests run.
 - `apps/website`: Astro static development preview.
 - `packages/contracts`: runtime schemas, derived types, and shared interfaces.
-- `packages/taxonomy`: twelve category definitions and examples.
-- `packages/test-fixtures`: explicit synthetic classifier and fixtures, never production inference.
+- `packages/taxonomy`: twelve category definitions, examples, and versioned classification assets.
+- `packages/test-fixtures`: explicit synthetic classifier, policy cases, and storage/browser fixtures, never production inference.
 - `packages/providers`: shared adapter type and reserved provider/registry boundaries.
-- `packages/decision-engine`, `linkedin-adapter`, `storage`, `ui`: package shells for later assignments.
+- `packages/decision-engine`: pure visibility policy and experimental/evaluated threshold configuration.
+- `packages/storage`: validated settings/migrations, gated session credentials, durable attempt accounting, and bounded memory cache/diagnostics.
+- `packages/linkedin-adapter`, `ui`: package shells for later assignments.
 
 Packages expose TypeScript source for workspace consumers to bundle; there is no published package distribution or separate declaration build yet. Keep code imports inside the documented dependency graph; `pnpm lint` checks manifests, imports, aliases, and re-exports.
 
@@ -66,3 +68,5 @@ Website output is `apps/website/dist/`. Extension builds are under `apps/extensi
 Firefox uses `development@clearedin.invalid`, minimum version 140, and a no-data declaration appropriate to this inert scaffold. These are development settings, not a validated production support matrix. Provider integration must revisit permissions and data declarations. The generated Firefox sources ZIP contains extension-local sources only; task 13 must prepare a complete reproducible monorepo reviewer bundle before submission.
 
 Start with the [documentation index](docs/README.md), [assignment guide](docs/build-assignments.md), and [foundation handoff](docs/evidence/01-foundation.md).
+
+Component handoffs: [taxonomy and policy](docs/evidence/03-taxonomy-and-policy.md), [storage and credentials](docs/evidence/04-storage-and-credentials.md). Production credential enablement still requires the pending evidence in the [browser-feasibility handoff](docs/evidence/02-browser-feasibility.md).

@@ -1,10 +1,10 @@
 # Subagent build assignments
 
-This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. Task **01 is complete** as of 2026-11-16; tasks **02–13 remain unassigned**. See the [foundation handoff](evidence/01-foundation.md) for validated contracts, tooling, and next steps. The canonical product, architecture, privacy, and testing specifications remain authoritative.
+This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. As of 2026-11-16, task **01 is complete**, task **02 has partial feasibility evidence**, and tasks **03/04 have completed component implementations**. Task 04 production credential enablement remains gated on task 02's pending browser evidence. Tasks **05–13 remain unassigned**. See the handoffs linked below for exact validation and limitations. The canonical product, architecture, privacy, and testing specifications remain authoritative.
 
 ## Start here
 
-Task **01 has established the foundation**. Start dependent branches from its implementation commit on `feat/01-foundation-and-contracts` and consume the documented shared interfaces. Choose ready tasks from the dependency table. Each linked file contains a copy-ready assignment, exclusive file scope, deliverables, acceptance criteria, and handoff requirements.
+Task **01 has established the foundation**. Start dependent branches from the accepted integration baseline on `main` containing their prerequisites, and consume the documented shared interfaces. Choose ready tasks from the dependency table. Each linked file contains a copy-ready assignment, exclusive file scope, deliverables, acceptance criteria, and handoff requirements.
 
 Keep one coordinating/integration owner responsible for accepting handoffs, shared contract changes, dependency updates, and integrating branches. The user can fill that role or assign it to the parent agent. Implementers own their component tests; task 12 supplies independent system evaluation rather than becoming the first person to test the code.
 
@@ -13,9 +13,9 @@ Keep one coordinating/integration owner responsible for accepting handoffs, shar
 | ID | Work package | Prerequisites | Main output |
 | --- | --- | --- | --- |
 | 01 | [Foundation and contracts](tasks/01-foundation-and-contracts.md) | None | **Complete** — workspace, schemas, API boundaries, fake classifier |
-| 02 | [Browser feasibility](tasks/02-browser-feasibility.md) | 01 | Browser/session-store evidence and manifest requirements |
-| 03 | [Taxonomy and policy](tasks/03-taxonomy-and-policy.md) | 01 | Pure category/visibility engine |
-| 04 | [Storage and credentials](tasks/04-storage-and-credentials.md) | 01, 02 | Settings, key store, durable request accounting |
+| 02 | [Browser feasibility](tasks/02-browser-feasibility.md) | 01 | **Partial** — [browser evidence and pending gates](evidence/02-browser-feasibility.md) |
+| 03 | [Taxonomy and policy](tasks/03-taxonomy-and-policy.md) | 01 | **Implemented** — [pure policy handoff](evidence/03-taxonomy-and-policy.md); release calibration pending |
+| 04 | [Storage and credentials](tasks/04-storage-and-credentials.md) | 01, 02 | **Implemented primitives** — [storage handoff](evidence/04-storage-and-credentials.md); production credentials gated on 02 |
 | 05 | [Feed DOM adapter](tasks/05-feed-dom-adapter.md) | 01, 02 | Extraction, identity, collapse/reveal/restore |
 | 06 | [Extension UI](tasks/06-extension-ui.md) | 01 | Onboarding, popup, options, shared controls |
 | 07 | [TypeSafe Jev](tasks/07-jev-provider.md) | 01; 03 for final semantic tests | Typed-question adapter and feasibility evidence |
