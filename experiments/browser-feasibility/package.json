@@ -1,0 +1,6 @@
+{
+  "name": "@clearedin/browser-feasibility-probe",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module"
+}
