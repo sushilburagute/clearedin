@@ -246,6 +246,9 @@ importers:
       '@clearedin/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@clearedin/taxonomy':
+        specifier: workspace:*
+        version: link:../taxonomy
 
   packages/linkedin-adapter:
     dependencies:
