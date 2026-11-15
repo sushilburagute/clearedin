@@ -1,6 +1,17 @@
 # 01 — Foundation and shared contracts
 
-Status: unassigned; no implementation started by this brief.
+Status: **complete**, 2026-11-16, on `feat/01-foundation-and-contracts`. See the [implementation handoff and validation evidence](../evidence/01-foundation.md).
+
+## Completion record
+
+- [x] Pinned workspace, app shells, and all required root commands.
+- [x] Runtime schemas, shared interfaces, taxonomy, and explicit synthetic fixtures.
+- [x] Dependency-direction guard and minimal CI without publishing.
+- [x] Fresh frozen-lockfile install in a clean staged copy, lint, formatting, strict typechecks, 46 tests, and local documentation checks.
+- [x] Static website build, Chrome/Firefox MV3 packaging, manifest checks, and ZIP/build byte parity.
+- [x] Public interface map and downstream ownership handoff documented.
+
+Packaged-browser execution, live-provider feasibility, filtering behavior, and production release gates belong to later tasks. `pnpm test:integration` reports NOT IMPLEMENTED with exit code 2; it is not counted as a passing test suite.
 
 ## Dependencies
 

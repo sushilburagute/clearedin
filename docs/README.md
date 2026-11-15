@@ -1,6 +1,6 @@
 # ClearedIn documentation
 
-Status: proposed implementation baseline, 2026-11-15. The repository was empty when these documents were written. No application, extension, tests, or production infrastructure exists yet. “ClearedIn” is a working name derived from the repository.
+Status: implementation baseline, updated 2026-11-16. Task 01 adds the monorepo foundation, app shells, shared contracts, fixtures, and automated checks. Filtering, provider integration, live-browser feasibility, and production infrastructure remain future work. See the [foundation handoff](evidence/01-foundation.md). “ClearedIn” is a working name derived from the repository.
 
 ClearedIn gives people control over the categories they see in their LinkedIn home feed. A browser extension extracts post text, asks a user-selected AI provider for category judgments, and applies the user's visibility rules locally. The website explains the product, demonstrates it with synthetic content, and provides installation and support documentation.
 
@@ -25,11 +25,11 @@ The requested providers are **TypeSafe Jev, OpenAI, and Anthropic**. Jev is a ty
 
 ## Assigning the build
 
-Use the [subagent assignment guide](build-assignments.md) for 13 copy-ready work packages, dependency ordering, file ownership, and acceptance criteria. Begin with task 01; it establishes the shared contracts required for parallel work. No build task has started as part of this documentation split.
+Use the [subagent assignment guide](build-assignments.md) for 13 copy-ready work packages, dependency ordering, file ownership, and acceptance criteria. The foundation handoff defines the shared contracts downstream tasks must consume; the assignment board tracks implementation status.
 
 ## Baseline decisions
 
-- TypeScript and pnpm workspaces; WXT + React for a shared extension; Astro for a static website. These are proposed choices, not installed dependencies.
+- TypeScript and pnpm workspaces; WXT + React for a shared extension; Astro for a static website. Task 01 installs and pins the foundation toolchain; its app shells are not a working filter.
 - DOM extraction on the desktop home feed; no private LinkedIn API or response interception in v1.
 - Chrome first for the feasibility spike, Firefox tested throughout and required for the intended v1 release. Publish separate browser packages.
 - Models label content; deterministic application code makes show/hide decisions.

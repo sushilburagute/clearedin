@@ -1,0 +1,32 @@
+name: Foundation checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+env:
+  ASTRO_TELEMETRY_DISABLED: 1
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.4.1
+          run_install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm docs:check
+      - run: pnpm build
+      - run: pnpm package:chrome
+      - run: pnpm package:firefox
+      - run: pnpm artifacts:check
+      # Integration tests are explicitly unavailable until tasks 02/11 implement them.
+      # No deployment, signing, provider secrets, or publishing in this workflow.

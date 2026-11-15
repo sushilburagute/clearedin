@@ -1,6 +1,6 @@
 # Data contracts and persistence
 
-These are implementation specifications, not existing exported TypeScript types. Implement matching runtime schemas in `packages/contracts` and derive static types from them. Unknown fields, enum values, duplicate category entries, oversized strings, and nonfinite scores are rejected.
+Task 01 implements these boundaries in `packages/contracts`, with runtime schemas and derived types. The code is the precise import contract; the examples below summarize it. See the [foundation interface map](evidence/01-foundation.md). Unknown fields, enum values, duplicate category entries, oversized strings, and nonfinite scores are rejected.
 
 ## Classification data
 
@@ -58,6 +58,8 @@ Version every message with `protocolVersion: 1`, a type discriminator, and a req
 No `window.postMessage` bridge is required. Do not expose externally connectable messaging. Document browser-specific sender-field differences in the wrapper and test both browsers.
 
 Both the exact allowlisted popup page and options page may send `SET_ENABLED` for Pause/Resume. Disabling increments the enablement generation, cancels queued/in-flight work, and broadcasts `RESTORE_ALL` to content scripts. Resuming requires valid consent and configuration. The popup may read public status but cannot set/read credentials or invoke the other options-only mutations.
+
+Options pages additionally use `GET_SETTINGS` to reload validated non-secret configuration and `TEST_PROVIDER_CONNECTION` to request the broker's packaged synthetic test. Neither command accepts an endpoint or arbitrary test text. Settings replies contain no credential. These are contracts only; task 11 implements transport, sender validation, and command handling.
 
 ## Settings schema
 

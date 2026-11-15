@@ -1,10 +1,10 @@
 # Subagent build assignments
 
-This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. It prepares the build for delegation; it does not start agents or implement the product. All tasks are unassigned. The canonical product, architecture, privacy, and testing specifications remain authoritative.
+This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. Task **01 is complete** as of 2026-11-16; tasks **02–13 remain unassigned**. See the [foundation handoff](evidence/01-foundation.md) for validated contracts, tooling, and next steps. The canonical product, architecture, privacy, and testing specifications remain authoritative.
 
 ## Start here
 
-Assign **01 alone first**. It establishes the workspace and shared interfaces that every other agent consumes. After its handoff, choose ready tasks from the dependency table. Each linked file contains a copy-ready assignment, exclusive file scope, deliverables, acceptance criteria, and handoff requirements.
+Task **01 has established the foundation**. Start dependent branches from its implementation commit on `feat/01-foundation-and-contracts` and consume the documented shared interfaces. Choose ready tasks from the dependency table. Each linked file contains a copy-ready assignment, exclusive file scope, deliverables, acceptance criteria, and handoff requirements.
 
 Keep one coordinating/integration owner responsible for accepting handoffs, shared contract changes, dependency updates, and integrating branches. The user can fill that role or assign it to the parent agent. Implementers own their component tests; task 12 supplies independent system evaluation rather than becoming the first person to test the code.
 
@@ -12,7 +12,7 @@ Keep one coordinating/integration owner responsible for accepting handoffs, shar
 
 | ID | Work package | Prerequisites | Main output |
 | --- | --- | --- | --- |
-| 01 | [Foundation and contracts](tasks/01-foundation-and-contracts.md) | None | Workspace, schemas, API boundaries, fake classifier |
+| 01 | [Foundation and contracts](tasks/01-foundation-and-contracts.md) | None | **Complete** — workspace, schemas, API boundaries, fake classifier |
 | 02 | [Browser feasibility](tasks/02-browser-feasibility.md) | 01 | Browser/session-store evidence and manifest requirements |
 | 03 | [Taxonomy and policy](tasks/03-taxonomy-and-policy.md) | 01 | Pure category/visibility engine |
 | 04 | [Storage and credentials](tasks/04-storage-and-credentials.md) | 01, 02 | Settings, key store, durable request accounting |

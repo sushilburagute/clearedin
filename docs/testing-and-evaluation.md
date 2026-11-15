@@ -1,6 +1,6 @@
 # Testing and evaluation
 
-All thresholds below are proposed release criteria. No tests have been implemented or run yet. Record hardware, browser versions, extension build, model ID, prompt/taxonomy versions, sample size, and date with every result.
+All thresholds below are proposed product-release criteria. Task 01 adds schema, fixture, and architectural-boundary tests plus build/artifact checks; see the [foundation evidence](evidence/01-foundation.md). Product behavior, live-provider quality, and packaged-browser integration remain unvalidated. Record hardware, browser versions, extension build, model ID, prompt/taxonomy versions, sample size, and date with every result.
 
 ## Test layers
 
@@ -47,6 +47,6 @@ Check keyboard-only onboarding and settings, focus inside posts when collapse is
 
 ## Intended CI commands
 
-When scaffolding is implemented, provide root scripts named `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:integration`, `pnpm build`, `pnpm package:chrome`, `pnpm package:firefox`, and `pnpm docs:check`. These commands do not exist yet. Live provider evaluations are separately invoked and budgeted, not an unconditional PR check.
+Task 01 provides root scripts named `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:integration`, `pnpm build`, `pnpm package:chrome`, `pnpm package:firefox`, and `pnpm docs:check`. `test:integration` deliberately exits 2 with NOT IMPLEMENTED until tasks 02/11 supply real packaged-browser coverage. Live provider evaluations are separately invoked and budgeted, not an unconditional PR check.
 
 CI installs from the frozen lockfile, runs checks, scans artifacts for secrets and remote code, validates manifests, builds website and packages, and records checksums. Store credentials are available only to the protected release job; untrusted pull requests cannot access them. Prompt/model/taxonomy changes require the evaluation report in addition to ordinary CI.
