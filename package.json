@@ -1,0 +1,37 @@
+{
+  "name": "clearedin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.4.1",
+  "engines": {
+    "node": ">=24.11.0 <25",
+    "pnpm": "12.4.1"
+  },
+  "scripts": {
+    "prepare": "pnpm --filter @clearedin/extension generate",
+    "lint": "eslint . && pnpm boundaries:check",
+    "boundaries:check": "node scripts/check-boundaries.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm prepare && tsc --noEmit -p tsconfig.packages.json && pnpm --filter @clearedin/extension typecheck && pnpm --filter @clearedin/website typecheck",
+    "test": "vitest run && node --test scripts/tests/*.test.mjs",
+    "test:integration": "node scripts/integration-status.mjs",
+    "build": "pnpm --filter @clearedin/website build && pnpm --filter @clearedin/extension build",
+    "package:chrome": "pnpm --filter @clearedin/extension package:chrome",
+    "package:firefox": "pnpm --filter @clearedin/extension package:firefox",
+    "docs:check": "node scripts/check-docs.mjs",
+    "artifacts:check": "node scripts/check-artifacts.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
+    "eslint": "10.15.0",
+    "eslint-plugin-astro": "3.2.1",
+    "prettier": "3.10.1",
+    "prettier-plugin-astro": "1.1.2",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.2",
+    "vitest": "5.1.0"
+  }
+}

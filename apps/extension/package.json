@@ -1,0 +1,27 @@
+{
+  "name": "@clearedin/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt -b chrome --mv3",
+    "dev:firefox": "wxt -b firefox --mv3",
+    "generate": "wxt prepare",
+    "typecheck": "tsc --noEmit",
+    "build": "wxt build -b chrome --mv3 && wxt build -b firefox --mv3",
+    "package:chrome": "wxt zip -b chrome --mv3",
+    "package:firefox": "wxt zip -b firefox --mv3"
+  },
+  "dependencies": {
+    "@clearedin/contracts": "workspace:*",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@wxt-dev/module-react": "1.2.2",
+    "vite": "8.3.8",
+    "wxt": "0.21.5"
+  }
+}

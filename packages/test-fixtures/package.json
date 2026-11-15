@@ -1,0 +1,14 @@
+{
+  "name": "@clearedin/test-fixtures",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./fake-classifier": "./src/fake-classifier/index.ts"
+  },
+  "dependencies": {
+    "@clearedin/contracts": "workspace:*",
+    "@clearedin/taxonomy": "workspace:*"
+  }
+}

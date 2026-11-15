@@ -22,7 +22,7 @@ packages/
 docs/                  this documentation
 ```
 
-This is a target layout. No listed application directory exists yet. Shared packages cannot depend on apps; website code cannot import credential or browser-background modules. Keep the classification pipeline independent of LinkedIn selectors so a future source adapter can reuse it.
+Task 01 establishes this layout with app shells, contracts, taxonomy, and synthetic fixtures; feature packages remain implementation boundaries. See the [foundation handoff](evidence/01-foundation.md) for exact exports. Shared packages cannot depend on apps; website code cannot import credential or browser-background modules. Keep the classification pipeline independent of LinkedIn selectors so a future source adapter can reuse it.
 
 ## Runtime flow
 
