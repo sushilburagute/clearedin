@@ -1,0 +1,279 @@
+{
+  "family": "chrome",
+  "timestamp": "2026-11-15T19:17:54.155Z",
+  "checks": [
+    {
+      "name": "packaged WXT extension loaded",
+      "passed": true
+    },
+    {
+      "name": "trusted session configured; no local/sync data",
+      "passed": true
+    },
+    {
+      "name": "optional host starts ungranted",
+      "passed": true
+    },
+    {
+      "name": "public status validates without secret fields",
+      "passed": true
+    },
+    {
+      "name": "dummy seeded before content test",
+      "passed": true
+    },
+    {
+      "name": "content cannot set credential",
+      "passed": true
+    },
+    {
+      "name": "content cannot invoke GET_SETTINGS",
+      "passed": true
+    },
+    {
+      "name": "content cannot invoke CLEAR_DATA",
+      "passed": true
+    },
+    {
+      "name": "content cannot invoke TEST_PROVIDER_CONNECTION",
+      "passed": true
+    },
+    {
+      "name": "content cannot retrieve trusted snapshot",
+      "passed": true
+    },
+    {
+      "name": "direct session read cannot retrieve dummy",
+      "passed": true
+    },
+    {
+      "name": "discover",
+      "passed": true
+    },
+    {
+      "name": "collapse",
+      "passed": true
+    },
+    {
+      "name": "reveal",
+      "passed": true
+    },
+    {
+      "name": "late result cannot rehide revealed post",
+      "passed": true
+    },
+    {
+      "name": "recycled node restored and generation changed",
+      "passed": true
+    },
+    {
+      "name": "stale generation rejected",
+      "passed": true
+    },
+    {
+      "name": "teardown restores content",
+      "passed": true
+    },
+    {
+      "name": "exact markup restored",
+      "passed": true
+    },
+    {
+      "name": "unsupported route or subframe denied",
+      "passed": true
+    },
+    {
+      "name": "unsupported route or subframe denied",
+      "passed": true
+    },
+    {
+      "name": "new background lifetime after forced worker stop",
+      "passed": true
+    },
+    {
+      "name": "dummy survives background stop",
+      "passed": true
+    },
+    {
+      "name": "content isolation and restoration survive background stop",
+      "passed": true
+    }
+  ],
+  "pending": [
+    "Browser restart: CDP debug installation did not persist; test an installation that survives restart.",
+    "Optional host request prompt: grant, denial, and revocation require interactive checking. Only initial absence was automated."
+  ],
+  "version": "Chrome/157.0.8103.51",
+  "initial": {
+    "type": "PROBE_SNAPSHOT",
+    "bootId": "9a6d9260-a1bd-4faa-bf91-9a7bff3d12ee",
+    "trustedSession": true,
+    "sessionApiAvailable": true,
+    "accessLevelApiAvailable": true,
+    "credentialConfigured": true,
+    "localEmpty": true,
+    "syncEmpty": true,
+    "optionalHostGranted": false,
+    "backgroundKind": "service-worker"
+  },
+  "content": {
+    "context": "packaged-content-script",
+    "checks": [
+      {
+        "name": "public status validates without secret fields",
+        "passed": true
+      },
+      {
+        "name": "dummy seeded before content test",
+        "passed": true
+      },
+      {
+        "name": "content cannot set credential",
+        "passed": true
+      },
+      {
+        "name": "content cannot invoke GET_SETTINGS",
+        "passed": true
+      },
+      {
+        "name": "content cannot invoke CLEAR_DATA",
+        "passed": true
+      },
+      {
+        "name": "content cannot invoke TEST_PROVIDER_CONNECTION",
+        "passed": true
+      },
+      {
+        "name": "content cannot retrieve trusted snapshot",
+        "passed": true
+      },
+      {
+        "name": "direct session read cannot retrieve dummy",
+        "passed": true
+      },
+      {
+        "name": "discover",
+        "passed": true
+      },
+      {
+        "name": "collapse",
+        "passed": true
+      },
+      {
+        "name": "reveal",
+        "passed": true
+      },
+      {
+        "name": "late result cannot rehide revealed post",
+        "passed": true
+      },
+      {
+        "name": "recycled node restored and generation changed",
+        "passed": true
+      },
+      {
+        "name": "stale generation rejected",
+        "passed": true
+      },
+      {
+        "name": "teardown restores content",
+        "passed": true
+      },
+      {
+        "name": "exact markup restored",
+        "passed": true
+      }
+    ]
+  },
+  "frame": {
+    "context": "packaged-content-script",
+    "checks": [
+      {
+        "name": "unsupported route or subframe denied",
+        "passed": true
+      }
+    ]
+  },
+  "afterBackgroundStop": {
+    "type": "PROBE_SNAPSHOT",
+    "bootId": "40edc400-c683-4121-b7fd-b53ef27e4602",
+    "trustedSession": true,
+    "sessionApiAvailable": true,
+    "accessLevelApiAvailable": true,
+    "credentialConfigured": true,
+    "localEmpty": true,
+    "syncEmpty": true,
+    "optionalHostGranted": false,
+    "backgroundKind": "service-worker"
+  },
+  "contentAfterBackgroundStop": {
+    "context": "packaged-content-script",
+    "checks": [
+      {
+        "name": "public status validates without secret fields",
+        "passed": true
+      },
+      {
+        "name": "dummy seeded before content test",
+        "passed": true
+      },
+      {
+        "name": "content cannot set credential",
+        "passed": true
+      },
+      {
+        "name": "content cannot invoke GET_SETTINGS",
+        "passed": true
+      },
+      {
+        "name": "content cannot invoke CLEAR_DATA",
+        "passed": true
+      },
+      {
+        "name": "content cannot invoke TEST_PROVIDER_CONNECTION",
+        "passed": true
+      },
+      {
+        "name": "content cannot retrieve trusted snapshot",
+        "passed": true
+      },
+      {
+        "name": "direct session read cannot retrieve dummy",
+        "passed": true
+      },
+      {
+        "name": "discover",
+        "passed": true
+      },
+      {
+        "name": "collapse",
+        "passed": true
+      },
+      {
+        "name": "reveal",
+        "passed": true
+      },
+      {
+        "name": "late result cannot rehide revealed post",
+        "passed": true
+      },
+      {
+        "name": "recycled node restored and generation changed",
+        "passed": true
+      },
+      {
+        "name": "stale generation rejected",
+        "passed": true
+      },
+      {
+        "name": "teardown restores content",
+        "passed": true
+      },
+      {
+        "name": "exact markup restored",
+        "passed": true
+      }
+    ]
+  },
+  "os": "Windows 11 Home Single Language 10.0.26200 x64"
+}
