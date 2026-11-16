@@ -18,9 +18,9 @@ Keep one coordinating/integration owner responsible for accepting handoffs, shar
 | 04 | [Storage and credentials](tasks/04-storage-and-credentials.md) | 01, 02 | **Implemented primitives** — [storage handoff](evidence/04-storage-and-credentials.md); production credentials gated on 02 |
 | 05 | [Feed DOM adapter](tasks/05-feed-dom-adapter.md) | 01, 02 | Extraction, identity, collapse/reveal/restore |
 | 06 | [Extension UI](tasks/06-extension-ui.md) | 01 | Onboarding, popup, options, shared controls |
-| 07 | [TypeSafe Jev](tasks/07-jev-provider.md) | 01; 03 for final semantic tests | Typed-question adapter and feasibility evidence |
-| 08 | [OpenAI](tasks/08-openai-provider.md) | 01; 03 for final semantic tests | Structured-output adapter and feasibility evidence |
-| 09 | [Anthropic](tasks/09-anthropic-provider.md) | 01; 03 for final semantic tests | Provider-native adapter and feasibility evidence |
+| 07 | [TypeSafe Jev](tasks/07-jev-provider.md) | 01; 03 for final semantic tests | **Component implemented** ? [handoff](evidence/07-jev.md); live/browser evidence pending |
+| 08 | [OpenAI](tasks/08-openai-provider.md) | 01; 03 for final semantic tests | **Component implemented** ? [handoff](evidence/08-openai.md); live/browser evidence pending |
+| 09 | [Anthropic](tasks/09-anthropic-provider.md) | 01; 03 for final semantic tests | **Component implemented** ? [handoff](evidence/09-anthropic.md); live/browser evidence pending |
 | 10 | [Website](tasks/10-website.md) | 01, 03; 06 token contract | Static site and synthetic demo |
 | 11 | [Runtime integration](tasks/11-runtime-integration.md) | 02–06 for fake flow; 07–09 for full flow | Working packaged extension |
 | 12 | [Evaluation and hardening](tasks/12-evaluation-and-hardening.md) | 01/03 to prepare; 10/11 to finish | Independent quality and release evidence |
