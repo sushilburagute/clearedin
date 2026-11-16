@@ -1,6 +1,6 @@
 # Subagent build assignments
 
-This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. As of 2026-11-16, task **01 is complete**, task **02 has partial feasibility evidence**, and tasks **03/04 have completed component implementations**. Task 04 production credential enablement remains gated on task 02's pending browser evidence. Tasks **05–13 remain unassigned**. See the handoffs linked below for exact validation and limitations. The canonical product, architecture, privacy, and testing specifications remain authoritative.
+This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. As of 2026-11-16, task **01 is complete**, task **02 has partial feasibility evidence**, and tasks **03/04 have completed component implementations**. Task 04 production credential enablement remains gated on task 02's pending browser evidence. Tasks **07-09 have component implementations**, with live API and browser evidence pending. Tasks **05-06 and 10-13 remain unassigned**. See the handoffs linked below for exact validation and limitations. The canonical product, architecture, privacy, and testing specifications remain authoritative.
 
 ## Start here
 
