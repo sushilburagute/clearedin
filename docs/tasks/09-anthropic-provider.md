@@ -1,6 +1,6 @@
 # 09 — Anthropic adapter
 
-Status: unassigned; no implementation started by this brief.
+Status: component implemented; see [evidence](../evidence/09-anthropic.md). Live API, packaged-browser validation, and calibration remain pending.
 
 ## Dependencies
 
