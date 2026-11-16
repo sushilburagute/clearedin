@@ -1,6 +1,6 @@
 # ClearedIn
 
-A TypeScript monorepo for a user-controlled LinkedIn feed filter. The foundation, pure taxonomy/policy, and injected storage primitives are implemented. Browser feasibility has partial evidence; runtime filtering and providers remain future work.
+A TypeScript monorepo for a user-controlled LinkedIn feed filter. The foundation, pure taxonomy/policy, injected storage primitives, synthetic-tested feed DOM adapter, and extension UI components are implemented. Browser feasibility has partial evidence; runtime filtering and providers remain future work.
 
 ## Setup
 
@@ -49,7 +49,7 @@ pnpm --filter @clearedin/extension dev:firefox
 
 ## Workspace
 
-- `apps/extension`: WXT/React popup, options, background, and feed-scoped content entrypoints. The background/content scripts are inert; no posts are read and no provider requests run.
+- `apps/extension`: WXT/React popup and options surfaces, with unavailable runtime transport until task 11. The background/content scripts are inert; no posts are read and no provider requests run. The options page offers an explicitly labeled synthetic demo that never accepts credentials.
 - `apps/website`: Astro static development preview.
 - `packages/contracts`: runtime schemas, derived types, and shared interfaces.
 - `packages/taxonomy`: twelve category definitions, examples, and versioned classification assets.
@@ -57,7 +57,8 @@ pnpm --filter @clearedin/extension dev:firefox
 - `packages/providers`: shared adapter type and reserved provider/registry boundaries.
 - `packages/decision-engine`: pure visibility policy and experimental/evaluated threshold configuration.
 - `packages/storage`: validated settings/migrations, gated session credentials, durable attempt accounting, and bounded memory cache/diagnostics.
-- `packages/linkedin-adapter`, `ui`: package shells for later assignments.
+- `packages/linkedin-adapter`: feed-only extraction, bounded observers, local identity, and reversible collapse/reveal, tested against synthetic DOM fixtures. Live LinkedIn selector compatibility is unverified.
+- `packages/ui`: shared design tokens, accessible controls, popup/options components, and frozen-client controllers with an explicit test-only mock transport.
 
 Packages expose TypeScript source for workspace consumers to bundle; there is no published package distribution or separate declaration build yet. Keep code imports inside the documented dependency graph; `pnpm lint` checks manifests, imports, aliases, and re-exports.
 
@@ -70,3 +71,5 @@ Firefox uses `development@clearedin.invalid`, minimum version 140, and a no-data
 Start with the [documentation index](docs/README.md), [assignment guide](docs/build-assignments.md), and [foundation handoff](docs/evidence/01-foundation.md).
 
 Component handoffs: [taxonomy and policy](docs/evidence/03-taxonomy-and-policy.md), [storage and credentials](docs/evidence/04-storage-and-credentials.md). Production credential enablement still requires the pending evidence in the [browser-feasibility handoff](docs/evidence/02-browser-feasibility.md).
+
+UI/DOM handoffs: [feed adapter](docs/evidence/05-feed-dom-adapter.md), [extension UI](docs/evidence/06-extension-ui.md). Task 11 must connect these components to the broker and production entrypoints; the current build does not filter a live feed or connect a provider.

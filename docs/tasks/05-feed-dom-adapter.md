@@ -1,6 +1,6 @@
 # 05 — Feed extraction and reversible rendering
 
-Status: unassigned; no implementation started by this brief.
+Status: component implemented with synthetic fixtures; live LinkedIn selector compatibility unverified. See the [handoff](../evidence/05-feed-dom-adapter.md). Production content-script integration belongs to task 11.
 
 ## Dependencies
 

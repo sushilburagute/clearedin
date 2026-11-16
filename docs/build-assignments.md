@@ -1,6 +1,6 @@
 # Subagent build assignments
 
-This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. As of 2026-11-16, task **01 is complete**, task **02 has partial feasibility evidence**, and tasks **03/04 have completed component implementations**. Task 04 production credential enablement remains gated on task 02's pending browser evidence. Tasks **05–13 remain unassigned**. See the handoffs linked below for exact validation and limitations. The canonical product, architecture, privacy, and testing specifications remain authoritative.
+This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. As of 2026-11-16, task **01 is complete**, task **02 has partial feasibility evidence**, and tasks **03–06 have component implementations**. Task 04 production credential enablement remains gated on task 02's pending browser evidence. Task 05 live-selector compatibility and task 06 production messaging/manual accessibility remain unverified. Tasks **07–13 remain unassigned**. See the handoffs linked below for exact validation and limitations. The canonical product, architecture, privacy, and testing specifications remain authoritative.
 
 ## Start here
 
@@ -16,8 +16,8 @@ Keep one coordinating/integration owner responsible for accepting handoffs, shar
 | 02 | [Browser feasibility](tasks/02-browser-feasibility.md) | 01 | **Partial** — [browser evidence and pending gates](evidence/02-browser-feasibility.md) |
 | 03 | [Taxonomy and policy](tasks/03-taxonomy-and-policy.md) | 01 | **Implemented** — [pure policy handoff](evidence/03-taxonomy-and-policy.md); release calibration pending |
 | 04 | [Storage and credentials](tasks/04-storage-and-credentials.md) | 01, 02 | **Implemented primitives** — [storage handoff](evidence/04-storage-and-credentials.md); production credentials gated on 02 |
-| 05 | [Feed DOM adapter](tasks/05-feed-dom-adapter.md) | 01, 02 | Extraction, identity, collapse/reveal/restore |
-| 06 | [Extension UI](tasks/06-extension-ui.md) | 01 | Onboarding, popup, options, shared controls |
+| 05 | [Feed DOM adapter](tasks/05-feed-dom-adapter.md) | 01, 02 | **Implemented component** — [synthetic DOM handoff](evidence/05-feed-dom-adapter.md); live compatibility unverified |
+| 06 | [Extension UI](tasks/06-extension-ui.md) | 01 | **Implemented component** — [UI handoff](evidence/06-extension-ui.md); production transport and manual accessibility checks pending |
 | 07 | [TypeSafe Jev](tasks/07-jev-provider.md) | 01; 03 for final semantic tests | Typed-question adapter and feasibility evidence |
 | 08 | [OpenAI](tasks/08-openai-provider.md) | 01; 03 for final semantic tests | Structured-output adapter and feasibility evidence |
 | 09 | [Anthropic](tasks/09-anthropic-provider.md) | 01; 03 for final semantic tests | Provider-native adapter and feasibility evidence |

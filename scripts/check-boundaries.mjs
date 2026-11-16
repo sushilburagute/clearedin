@@ -10,7 +10,7 @@ export const ALLOWED_DEPENDENCIES = Object.freeze({
   taxonomy: ['contracts'],
   providers: ['contracts', 'taxonomy'],
   'decision-engine': ['contracts', 'taxonomy'],
-  'linkedin-adapter': ['contracts', 'taxonomy', 'ui'],
+  'linkedin-adapter': ['contracts', 'taxonomy', 'ui', 'test-fixtures'],
   storage: ['contracts'],
   ui: ['contracts', 'taxonomy', 'decision-engine'],
   'test-fixtures': ['contracts', 'taxonomy'],
