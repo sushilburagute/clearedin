@@ -1,6 +1,6 @@
 # 07 — TypeSafe Jev adapter
 
-Status: unassigned; no implementation started by this brief.
+Status: component implemented; see [evidence](../evidence/07-jev.md). Live API, packaged-browser validation, and calibration remain pending.
 
 ## Dependencies
 

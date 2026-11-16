@@ -5,9 +5,13 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./types": "./src/types.ts"
+    "./types": "./src/types.ts",
+    "./typesafe": "./src/typesafe/index.ts",
+    "./openai": "./src/openai/index.ts",
+    "./anthropic": "./src/anthropic/index.ts"
   },
   "dependencies": {
-    "@clearedin/contracts": "workspace:*"
+    "@clearedin/contracts": "workspace:*",
+    "@clearedin/taxonomy": "workspace:*"
   }
 }

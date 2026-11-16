@@ -1,6 +1,6 @@
 # 08 — OpenAI adapter
 
-Status: unassigned; no implementation started by this brief.
+Status: component implemented; see [evidence](../evidence/08-openai.md). Live API, packaged-browser validation, and calibration remain pending.
 
 ## Dependencies
 
