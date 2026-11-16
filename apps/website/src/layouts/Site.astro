@@ -1,0 +1,64 @@
+---
+import '../styles/site.css';
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const links = [
+  ['/', 'Home'],
+  ['/how-it-works/', 'How it works'],
+  ['/demo/', 'Synthetic demo'],
+  ['/install/', 'Install'],
+  ['/setup/', 'Provider setup'],
+  ['/privacy/', 'Privacy'],
+  ['/support/', 'FAQ & support'],
+  ['/changelog/', 'Changelog'],
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} | ClearedIn preview</title>
+  </head>
+  <body>
+    <a class="skip" href="#main">
+      Skip to content
+    </a>
+    <header>
+      <a class="brand" href="/">
+        ClearedIn
+      </a>
+      <p>Development preview · Not available to install</p>
+      <nav aria-label="Main navigation">
+        {links.map(([url, label]) => (
+          <a
+            href={url}
+            aria-current={Astro.url.pathname === url ? 'page' : undefined}
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer>
+      <p>
+        Your feed, your choices. Classification can be wrong; you stay in
+        control.
+      </p>
+      <p>
+        Operator, support contact, domain and hosting details are pending
+        release decisions. No affiliation or endorsement by LinkedIn or model
+        providers is implied.
+      </p>
+    </footer>
+  </body>
+</html>

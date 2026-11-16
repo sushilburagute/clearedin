@@ -1,13 +1,22 @@
+import { createRequire } from 'node:module';
 import { defineConfig } from 'wxt';
 
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
+  imports: false,
+  vite: () => ({
+    resolve: {
+      alias: {
+        'wxt/browser': createRequire(import.meta.url).resolve('wxt/browser'),
+      },
+    },
+  }),
   manifestVersion: 3,
   manifest: ({ browser }) => ({
     name: 'ClearedIn Development',
     description:
       'Development foundation for user-controlled feed filtering. Filtering is not implemented.',
-    permissions: [],
+    permissions: ['storage'],
     ...(browser === 'firefox'
       ? {
           browser_specific_settings: {

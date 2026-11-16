@@ -15,7 +15,8 @@
   "dependencies": {
     "@clearedin/contracts": "workspace:*",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "@clearedin/storage": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "19.3.0",
