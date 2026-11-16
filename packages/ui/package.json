@@ -3,11 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css"
   },
   "dependencies": {
-    "@clearedin/contracts": "workspace:*"
+    "@clearedin/contracts": "workspace:*",
+    "@clearedin/taxonomy": "workspace:*",
+    "react": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "react-dom": "19.3.1",
+    "linkedom": "0.18.15"
   }
 }
