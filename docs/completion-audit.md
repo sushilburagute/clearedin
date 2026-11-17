@@ -66,3 +66,9 @@ Artifacts are a **dirty-workspace development snapshot**, not an accepted tagged
 For reproduction, use the [release check sequence](release/README.md). `test:integration` is local injected/synthetic coverage. `release:check` exits 2 while gates remain pending; that is an unresolved release result, not a passing test. No public release readiness is claimed.
 
 Detailed handoffs: [website](evidence/10-website.md), [runtime](evidence/11-runtime.md), [validation](evidence/12-validation.md), and [release](evidence/13-release.md).
+
+## Main merge validation
+
+Merged main at `f37c22a` into the local audit work on 2026-11-17. Consolidated the duplicate website routes/demo and sender authorization, retained the incoming 404/robots rules, dispatch regressions, provisional evaluation fixtures, and packaged validation protocols. Updated the incoming broker/scheduler regressions to exercise the current interfaces. Kept `PROVIDER_AVAILABILITY` as a compatible export of the gated registry. The provisional observation metrics have a distinct filename so module resolution cannot select the separate CLI metrics implementation.
+
+On Node 24.22.3 and pnpm 12.4.1: frozen install, lint/boundaries, formatting, package/integration/evaluation typechecks, documentation checks, 275 package/evaluation tests (one opt-in live test skipped), 16 script tests, and 42 local integration tests passed. The website built nine pages including 404 and passed both static checkers. Chrome/Firefox builds, ZIPs, and artifact parity checks passed. These merge checks do not resolve the pending production or release gates above.

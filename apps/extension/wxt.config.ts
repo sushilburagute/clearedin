@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { defineConfig } from 'wxt';
 
 // WXT forwards these to unimport/unplugin, but its public type omits the
@@ -9,6 +10,13 @@ export default defineConfig({
   // All imports are explicit. Auto-import rewriting can mistake injected
   // browser ports in shared packages for the privileged WXT browser global.
   imports: explicitImports,
+  vite: () => ({
+    resolve: {
+      alias: {
+        'wxt/browser': createRequire(import.meta.url).resolve('wxt/browser'),
+      },
+    },
+  }),
   manifestVersion: 3,
   manifest: ({ browser }) => ({
     name: 'ClearedIn Development',

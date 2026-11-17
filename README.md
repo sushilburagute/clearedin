@@ -1,6 +1,6 @@
 # ClearedIn
 
-A TypeScript monorepo for a user-controlled LinkedIn feed filter. Shared components, three provider adapters, persistent local extension settings, an offline integration flow, and an eight-page website with a synthetic demo are implemented. **Live feed filtering and provider connections remain disabled.** See the [completion audit](docs/completion-audit.md) for verified work and remaining gaps.
+A TypeScript monorepo for a user-controlled LinkedIn feed filter. Shared components, three provider adapters, persistent local extension settings, an offline integration flow, and an eight-page website with a synthetic demo plus a 404 page are implemented. **Live feed filtering and provider connections remain disabled.** See the [completion audit](docs/completion-audit.md) for verified work and remaining gaps.
 
 ## Setup
 

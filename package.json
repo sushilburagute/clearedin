@@ -22,7 +22,7 @@
     "package:firefox": "pnpm --filter @clearedin/extension package:firefox",
     "docs:check": "node scripts/check-docs.mjs",
     "artifacts:check": "node scripts/check-artifacts.mjs",
-    "site:check": "node scripts/check-site.mjs",
+    "site:check": "node scripts/check-site.mjs && node apps/website/tests/check-static.mjs",
     "evaluate": "node scripts/evaluate.mjs",
     "release:check": "node scripts/check-release.mjs",
     "release:prepare": "node scripts/prepare-release.mjs"

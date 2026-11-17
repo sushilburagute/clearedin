@@ -32,6 +32,9 @@ export const PROVIDER_REGISTRY = Object.freeze({
   },
 } as const);
 
+// Keep the availability export used by earlier runtime integrations.
+export const PROVIDER_AVAILABILITY = PROVIDER_REGISTRY;
+
 /** Explicit component-test factory. Production must also satisfy the registry gates. */
 export function createProviderAdapter(
   provider: ProviderId,

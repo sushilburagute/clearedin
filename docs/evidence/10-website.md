@@ -2,6 +2,8 @@
 
 Status: **implemented locally; manual browser and release acceptance pending**. Audit date: 2026-11-17.
 
+The merge from main also retains preview robots rules and a dedicated 404 page. The site now builds nine pages including that error page; duplicate dynamic routes and the earlier demo implementation were consolidated into the current site.
+
 Eight static Astro pages now cover home, how it works, synthetic demo, installation, provider setup, privacy, FAQ/support, and changelog. Shared UI tokens provide light/dark colors and system typography. Layouts adapt below 800px; controls have labels, focus rings, 44px targets, and reduced-motion/forced-color rules. No external fonts, images, trackers, provider calls, or credential fields are included.
 
 The demo imports the existing exact-fixture classifier and deterministic policy. Every category begins visible. Hide, Always show precedence, reveal, pause/resume, and reset work on ten synthetic remote examples plus one local sponsored example. Experimental thresholds are explicitly limited to this synthetic demonstration. These fixed labels are not evaluation evidence.
