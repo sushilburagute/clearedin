@@ -1,0 +1,47 @@
+---
+import Site from '../layouts/Site.astro';
+import { CATEGORY_DEFINITIONS } from '@clearedin/taxonomy';
+---
+
+<Site
+  title="Synthetic demo"
+  description="Try category controls on fixed synthetic examples without credentials or provider calls."
+>
+  <h1>Make room for what matters.</h1>
+  <p>
+    Fixed synthetic examples, not model accuracy evidence. No keys, provider
+    calls or saved preferences.
+  </p>
+  <p>
+    Show normally is neutral. Always show protects a post even when another
+    matching category is hidden. Try hiding Referrals and protecting Job
+    postings.
+  </p>
+  <noscript>
+    Enable JavaScript to use the local interactive demo. No network inference is
+    used.
+  </noscript>
+  <div class="demo">
+    <section class="controls" aria-label="Category preferences">
+      {CATEGORY_DEFINITIONS.map((category) => (
+        <label>
+          {category.label}
+          <small> — {category.definition}</small>
+          <select data-category={category.id}>
+            <option value="show">Show normally</option>
+            <option value="hide">Hide</option>
+            <option value="always_show">Always show</option>
+          </select>
+        </label>
+      ))}
+      <button id="reset" type="button">
+        Reset demo
+      </button>
+    </section>
+    <section aria-label="Synthetic feed">
+      <p id="status" role="status" aria-live="polite"></p>
+      <div id="feed"></div>
+    </section>
+  </div>
+</Site>
+<script src="../lib/demo.ts"></script>

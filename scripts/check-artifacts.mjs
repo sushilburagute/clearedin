@@ -71,7 +71,7 @@ for (const browser of ['chrome', 'firefox']) {
     await readFile(resolve(root, 'manifest.json'), 'utf8'),
   );
   assert.equal(manifest.manifest_version, 3);
-  assert.deepEqual(manifest.permissions ?? [], []);
+  assert.deepEqual(manifest.permissions ?? [], ['storage']);
   assert.deepEqual(manifest.host_permissions ?? [], []);
   assert.deepEqual(manifest.optional_host_permissions ?? [], []);
   assert.equal(manifest.externally_connectable, undefined);
