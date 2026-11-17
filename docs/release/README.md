@@ -1,43 +1,46 @@
-# Release candidate procedure
+# Development review and release preparation
 
-This is a development candidate, not an approved public release. Tasks 05/06, packaged-browser evidence, independent annotation, live provider feasibility, and operator decisions remain gates. No tag, store submission, signing, hosting account, or deployment is created by this procedure.
+This is a development review package, not an approved release candidate. See the [gap audit](../completion-audit.md) and [gate ledger](gates.json). No store listing, domain, operator identity, support contact, license choice, provider credential decision, or public distribution approval is invented here.
 
-## Reproduce and retain
+## Reproduce and inspect
 
-Use Node 24.11.x and pnpm 12.4.1. The release owner must select an accepted commit, confirm a clean checkout, and create an approved version tag only after the gate ledger is complete. From that exact checkout run:
+Use Node 24.22.3 and pnpm 12.4.1, the committed lockfile, and the same accepted source for every artifact:
 
-```powershell
-pnpm.cmd install --frozen-lockfile
-pnpm.cmd lint
-pnpm.cmd format:check
-pnpm.cmd typecheck
-pnpm.cmd test
-pnpm.cmd docs:check
-pnpm.cmd build
-pnpm.cmd package:chrome
-pnpm.cmd package:firefox
-pnpm.cmd artifacts:check
-node scripts/release-inventory.mjs
+```sh
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm format:check
+pnpm typecheck
+pnpm test
+pnpm test:integration
+pnpm site:check
+pnpm docs:check
+pnpm build
+pnpm package:chrome
+pnpm package:firefox
+pnpm artifacts:check
+pnpm release:prepare
+pnpm release:check
 ```
 
-Archive both ZIPs, the Firefox source archive, website dist tree, lockfile, source commit, tool versions, command logs, and generated inventory together. Inventory contains SHA-256 of every website and package file and the exact Git source identity; dirty candidates are explicitly labeled. ZIP metadata may differ between rebuilds: compare unpacked bytes and manifests, not a promise of byte-identical ZIPs. Rebuild in a second clean environment before claiming reproducibility. Do not treat build success as browser execution.
+The final command exits 2 while launch gates remain unresolved; do not mask it in a release job. CI's passing development checks are separate. `.release/inventory.json` records artifact/source SHA-256 values, current commit, dirty state, and Node version. Unzip `repository-source.zip` to a new directory, install with the frozen lockfile, and reproduce both browser builds and the site. An independent clean-tag rebuild remains required before submission. The source ZIP contains no `.git`; release preparation itself requires a Git checkout, but builds do not.
 
-Inspect generated manifests for storage, feed matching, fixed optional provider destinations, CSP, Firefox ID/data declarations, and absence of unexpected permissions. The development Firefox ID must be replaced with the operator's approved ID before submission. Review licenses, dependencies, full secret scanning, and store source requirements separately from the basic artifact pattern audit.
+## Reviewer walkthrough
 
-## Reviewer materials
+1. Use a disposable development browser profile. Inspect the generated Chrome/Firefox manifests: storage permission, feed-scoped inert content script, local-code CSP, no provider host permissions or remote executable code.
+2. Open extension options. Confirm all providers are unavailable and credential entry is disabled. Change a category and daily limit, save, close/reopen options, and check persistence. Recreate the background context and repeat. Clear all data and verify defaults return. These manual checks must be recorded; local tests do not establish browser behavior.
+3. Open the explicitly labelled synthetic UI demo. It simulates setup in memory without accepting a key. Exit to discard its changes. Confirm it has not changed persistent settings.
+4. Build/open the static website locally using the website dev command. Use the synthetic demo to hide engagement bait, hide product launches, protect technical content, reveal, pause, and reset. Check keyboard focus, screen-reader labels, 200% zoom, widths 360/768/1440px, dark mode, reduced motion, and forced colors. Record outcomes; no manual passes are claimed yet.
+5. Confirm no live feed is altered and no provider traffic occurs. Do not use real API credentials or real-feed screenshots in reviewer materials.
 
-Single purpose: user-controlled category filtering of rendered feed text. Draft short description: “Preview user-controlled feed category preferences with a synthetic demonstration.” Do not advertise working live filtering until the adapter/UI and browser gates pass.
+Draft development listing: “ClearedIn is a development preview of user-controlled feed category rules. Explore a synthetic demonstration and save local preferences. Live filtering and provider connections are not available.” This wording is for review only; final store copy must match the supported release and approved privacy disclosure.
 
-Draft full description: “ClearedIn is a development preview of category-based feed filtering. Its website demonstration uses invented posts and local classification. Planned remote classification requires explicit consent and a separately billed provider credential. Uncertain posts remain visible; overlapping Always show rules take precedence over Hide. No provider/browser combination is currently advertised as production supported.”
+Permission rationale: `storage` persists non-secret category preferences, limits, and future conservative request accounting. It does not authorize provider access. Feed matches are reserved for the currently inert content entrypoint. A future provider-enabled package needs exact optional origins, final disclosures, and renewed review.
 
-Reviewer steps: build from the recorded source; load Chrome unpacked output or Firefox temporary add-on; inspect the preview status and options; visit the built website demo; change a category to Hide, exercise reveal, and verify Always show precedence. Capture only synthetic material. Packaged real-feed controls are pending task 05/06; reviewers must not be instructed to enter credentials into an unavailable path. Store screenshots and real packaged accessibility evidence remain pending, not fabricated.
+## Website deployment and rollback
 
-Permission rationale: storage persists validated preferences and aggregate request reservations where wired. Feed content-script matching is limited to the supported route. Provider host permissions must remain absent or unavailable until each fixed endpoint and consent flow is validated. No cookies, history, debugger, arbitrary hosts, or remote code are justified.
+No deployment is performed. Once a host/domain/operator is accepted, publish only `apps/website/dist/` from the same reviewed source. Apply `public/_headers` where supported, otherwise configure equivalent HTTP headers. Verify HTTPS, CSP, no remote connections, redirects, preview noindex, and all internal links on the actual host. Keep previews private/noindex until public facts and support/install URLs are complete. Retain the previous immutable static artifact and restore that version to roll back the website.
 
-## Deploy and recover
+## Extension recovery and operations
 
-Deploy only the retained website dist from the same accepted commit as both packages. Choose the host/domain, HTTPS, canonical URLs, cache behavior, CSP and other security headers before deployment. Verify all internal links, 404 handling, preview indexing restrictions, privacy/support facts and approved installation URLs. Preserve the previous immutable deployment; rollback by switching the host to it and rechecking links and headers. No provider secrets are build variables.
-
-First release: no previously distributed version is recorded, so prior-version migration is not applicable yet; fresh install, restart, clear-data, and storage schema recovery still require evidence. For later releases, test fixtures from every supported schema and an actual previous package. Extension rollback uses a higher version containing reverted code with compatible migrations. Never assume store downgrades work. Exercise recovery in both browsers before rollout.
-
-Incident responder and backup: UNASSIGNED. Support address and coverage: PENDING. On unauthorized transmission or key exposure pause rollout, advise pause/disable and issuer-side revocation, preserve sanitized evidence, fix and verify before replacement credentials. Follow the operations runbook; never solicit keys or real-feed dumps.
+No previously published version exists in the supplied evidence; real prior-version upgrade acceptance is pending. Storage schema/migration regressions are covered by component tests. Before launch, record an upgrade exercise on the final installed packages. For an incident, users can pause/disable the extension; a release owner must build a higher-version recovery package from reviewed reverted code, preserve compatible migrations, rerun checks, and use the approved distribution channel. Do not assume a store permits downgrades or instant updates. Name the responder, support/privacy contacts, license, and signing owners in the ledger before release.

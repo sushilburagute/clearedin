@@ -220,7 +220,9 @@ describe('rendered extension surfaces (synthetic DOM)', () => {
         }),
       ),
     );
-    expect(document.body.textContent).toContain('not wired yet');
+    expect(document.body.textContent).toContain(
+      'live filtering and provider connections are unavailable',
+    );
     expect(document.querySelector('input')).toBeNull();
     await click('Open settings');
     expect(openSettings).toHaveBeenCalledOnce();
@@ -238,7 +240,7 @@ describe('rendered extension surfaces (synthetic DOM)', () => {
     expect(button('Grant provider host access').disabled).toBe(true);
     expect(button('Save session credential').disabled).toBe(true);
     expect(document.body.textContent).toContain(
-      'Provider connections and filtering are unavailable.',
+      'Provider connections and live filtering are unavailable.',
     );
   });
 });

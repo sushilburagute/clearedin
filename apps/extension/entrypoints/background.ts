@@ -1,22 +1,22 @@
 import { defineBackground } from 'wxt/utils/define-background';
 import { browser } from 'wxt/browser';
-import { createStorage } from '@clearedin/storage';
 import { createBroker } from '../src/background/broker';
-import type { BroadcastMessage } from '@clearedin/contracts';
 
 export default defineBackground(() => {
-  const broadcast = async (event: BroadcastMessage) => {
-    const tabs = await browser.tabs.query({
-      url: 'https://www.linkedin.com/feed/*',
-    });
-    await Promise.allSettled(
-      tabs
-        .filter((tab) => tab.id !== undefined)
-        .map((tab) => browser.tabs.sendMessage(tab.id!, event)),
-    );
-  };
-  const storage = createStorage({
-    clock: { now: Date.now },
+  const broker = createBroker({
+    extension: {
+      id: browser.runtime.id,
+      optionsUrl: browser.runtime.getURL('/options.html'),
+      popupUrl: browser.runtime.getURL('/popup.html'),
+      version: browser.runtime.getManifest().version,
+    },
+    clock: {
+      now: () => Date.now(),
+      schedule(callback, delay) {
+        const timer = setTimeout(callback, delay);
+        return () => clearTimeout(timer);
+      },
+    },
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     browser: {
       capabilities: {
@@ -39,23 +39,31 @@ export default defineBackground(() => {
         },
       },
       trustedSessionStorage: null,
-      hasProviderPermission: async () => false,
-      requestProviderPermission: async () => false,
-      broadcast,
+      async hasProviderPermission() {
+        return false;
+      },
+      async requestProviderPermission() {
+        return false;
+      },
+      async broadcast(event) {
+        await browser.runtime.sendMessage(event).catch(() => undefined);
+      },
     },
   });
-  const broker = createBroker(
-    storage,
-    browser.runtime.id,
-    browser.runtime.getURL('/'),
-    broadcast,
-  );
-  browser.runtime.onMessage.addListener((raw, sender) =>
-    broker(raw, {
+  browser.runtime.onMessage.addListener((message: unknown, sender) => {
+    // Broadcasts are one-way notifications, not broker requests.
+    if (
+      message &&
+      typeof message === 'object' &&
+      'type' in message &&
+      (message.type === 'STATUS_CHANGED' || message.type === 'RESTORE_ALL')
+    )
+      return undefined;
+    return broker.handle(message, {
       extensionId: sender.id ?? '',
       url: sender.url ?? '',
       tabId: sender.tab?.id ?? null,
       frameId: sender.frameId ?? null,
-    }),
-  );
+    });
+  });
 });

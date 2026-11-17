@@ -4,39 +4,82 @@ import Site from '../layouts/Site.astro';
 
 <Site
   title="Your feed, your choices"
-  description="Explore user-controlled feed category filtering with a free, synthetic demonstration."
+  description="Explore category controls for your LinkedIn home feed in a free, synthetic demo. Development preview; live filtering is not yet available."
 >
-  <h1>Your feed, your choices.</h1>
-  <p class="lead">
-    Keep the opportunities. Make room for useful ideas. Choose which kinds of
-    posts you want to see, and reveal anything you hide.
-  </p>
-  <p>
-    <a class="button" href="/demo/">
-      Try the synthetic demo
-    </a>
-  </p>
-  <p>
-    No key, account or provider request. Fixed examples show how your choices
-    work.
-  </p>
-  <h2>A preference, not a verdict</h2>
-  <p>
-    ClearedIn is a development project for reversible category filtering on the
-    desktop LinkedIn home feed. It does not judge authors or detect AI-generated
-    writing.
-  </p>
-  <h2>Choose what matters</h2>
-  <p>
-    Hide engagement bait, protect job postings, or leave everything visible. A
-    post can belong to more than one category: Always show takes precedence.
-  </p>
-  <div class="notice">
-    <strong>Public release is pending.</strong>
+  <section class="hero">
+    <div>
+      <h1>Your feed, your choices.</h1>
+      <p class="lead">
+        More of what you came for. Choose the categories you want to see, hide
+        the ones you don’t, and keep the final say.
+      </p>
+      <div class="actions">
+        <a class="button" href="/demo/">
+          Try the synthetic demo
+        </a>
+        <a href="/how-it-works/">See how the rules work</a>
+      </div>
+      <p>No account. No API key. Just sample posts.</p>
+    </div>
+    <div
+      class="sample-feed"
+      aria-label="Illustrative feed rules, not live predictions"
+    >
+      <p>Synthetic feed preview</p>
+      <article>
+        <strong>A compiler launch with real benchmarks</strong>
+        <p>
+          A launch can also be useful technical content. Your “Always show” rule
+          takes priority.
+        </p>
+        <span class="rule">Always show: Technical content</span>
+      </article>
+      <article>
+        <strong>Hidden: Engagement bait</strong>
+        <p>
+          Hidden posts keep a reveal control. Change your mind whenever you
+          like.
+        </p>
+        <a href="/demo/">Try hiding and revealing a sample</a>
+      </article>
+      <article>
+        <strong>Something big is coming…</strong>
+        <p>Not enough context? It stays visible.</p>
+        <span class="rule">Visible: Uncertain classification</span>
+      </article>
+    </div>
+  </section>
+  <section class="principles" aria-label="Your controls">
+    <div>
+      <h2>Choose by category</h2>
+      <p>
+        Job postings, referrals, technical content, product launches, and more.
+        Every category starts visible.
+      </p>
+    </div>
+    <div>
+      <h2>Protect what matters</h2>
+      <p>
+        “Always show” wins over a hidden category. “Show normally” leaves other
+        rules in place.
+      </p>
+    </div>
+    <div>
+      <h2>Keep an easy way back</h2>
+      <p>
+        Reveal a post, pause filtering, or withdraw consent. The intended
+        behavior is to restore your feed.
+      </p>
+    </div>
+  </section>
+  <section class="closing">
+    <h2>Understand it before you connect it.</h2>
     <p>
-      Browser and provider validation, independent evaluation and a
-      platform/distribution decision are still required.{' '}
-      <a href="/install/">See installation status</a>.
+      The demo runs entirely on fixed synthetic examples. Future live
+      classification would send minimized post text to your selected provider
+      and may incur API charges. No provider connection is available in this
+      preview.
     </p>
-  </div>
+    <a href="/privacy/">Read about data and privacy</a>
+  </section>
 </Site>

@@ -5,5 +5,8 @@ dist/
 .wxt/
 .astro/
 coverage/
+.release/
+# Pre-existing user-owned release artifacts are not source formatting inputs.
+artifacts/
 # Existing planning docs retain their authored tables; docs:check validates links/fences.
 docs/

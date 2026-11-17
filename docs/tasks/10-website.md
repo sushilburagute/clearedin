@@ -1,6 +1,6 @@
 # 10 — Public website and synthetic demo
 
-Status: unassigned; no implementation started by this brief.
+Status: implemented locally; manual browser/accessibility and release facts pending. See the [2026-11-17 handoff](../evidence/10-website.md).
 
 ## Dependencies
 

@@ -1,26 +1,14 @@
-# Task 13 release preparation evidence
+# Task 13: release preparation
 
-Status: partial, development candidate only; public launch NOT READY. Validated 2026-11-16 on Windows with Node v24.6.0 (below required >=24.11.0) and pnpm 12.4.1. Supported-toolchain CI and second-environment reproducibility remain pending.
+Status: **partial**, 2026-11-17. No release, signing, submission, publication, or deployment performed.
 
-## Delivered
+Added a versioned [gate ledger](../release/gates.json), [reviewer/build/recovery instructions](../release/README.md), and developer commands:
 
-Release procedure, reviewer copy, permission rationale, first-release migration status, higher-version recovery and deployment rollback instructions are in ../release/README.md. Gate owners, unresolved facts and release ledger fields are in ../release/gates.md. Owners remain unassigned rather than invented. No publishing, submission, signing or deployment occurred.
+- `pnpm release:check` validates the ledger and evidence paths, then exits 2 while any gate is pending/failed. A passed gate requires an explicitly named acceptance owner and evidence.
+- `pnpm release:prepare` writes a complete monorepo source ZIP, both development browser ZIPs, a website ZIP, and SHA-256 inventory into ignored `.release/`. It uses the current workspace and records the base commit plus dirty status, rather than mislabelling uncommitted edits as a tagged release.
+- Source archives include workspace packages, lockfile, configs, tests, experiments, and docs. Ignored outputs, Git metadata, credentials files, and the pre-existing user-owned `artifacts/` directory are excluded. The WXT Firefox sources ZIP remains extension-local and must not substitute for this full monorepo source bundle.
+- CI runs local integration and website checks and uploads development review materials. It has no provider secrets, signing, store submission, or deployment step.
 
-`scripts/release-inventory.mjs` records source commit, dirty status, sizes and SHA-256 hashes of both browser ZIPs and every website file in ignored `artifacts/release-inventory.json`. Run again at accepted clean source. WXT's sources ZIP includes only the extension workspace and is NOT sufficient reviewer source: retain a full repository source archive with shared packages, lockfile and root build scripts (`git archive --format=zip --output=artifacts/repository-source.zip HEAD`).
+Pending release gates remain independently visible. The machine-readable ledger intentionally has no invented owner names or inferred approvals. Build hashes identify inspected bytes, not product readiness or permission to distribute. Rebuild all assets after source changes and prepare the final bundle only from an accepted clean tag.
 
-## Actual local validation
-
-- lint and workspace boundaries: passed.
-- tests: 227 passed, 1 skipped; 12 boundary checker tests passed.
-- format:check and docs:check: passed.
-- typecheck: passed, Astro 0 errors/warnings/hints.
-- website build and static checks: passed, 9 pages with working internal links and offline demo bundle.
-- Chrome and Firefox MV3 builds and ZIP packaging: passed.
-- artifacts:check: passed manifest checks, basic secret/remote-script patterns and ZIP/build byte parity for both browsers.
-- release inventory: generated for 15 files; initially labeled dirty development source, not an accepted tag.
-
-WXT browser-module resolution required an explicit app-owned alias when bundling dependency-injected workspace storage. No remote code is externalized. Storage is the only required permission; provider host permissions and production credential support remain unavailable.
-
-## Remaining acceptance
-
-Tasks 05/06 adapter and UI prerequisites are absent. Runtime helpers are not a working end-to-end feed product. Browser execution, screen-reader/zoom/keyboard checks, synthetic screenshots, live provider feasibility, independent annotations and quality/performance measurements remain pending. Basic artifact scanning is not comprehensive security or license review. Operator/domain/support facts, accountable people, platform decision, exact submission-date policy checks and release approval must be supplied before launch. See task 10-12 evidence and the gate ledger. No gate is passed by inference from build success.
+Local preparation passed: both browser archives matched inspected builds byte for byte. The full source archive was independently read with the platform ZIP reader, verifying all 208 entries against the inventory and all four artifact hashes. The gate command reported 11 pending gates and underlying exit 2. No final tagged rebuild or hosted CI run is claimed.

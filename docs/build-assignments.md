@@ -1,6 +1,6 @@
 # Subagent build assignments
 
-This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. As of 2026-11-16, task **01 is complete**, task **02 has partial feasibility evidence**, and tasks **03/04 have completed component implementations**. Task 04 production credential enablement remains gated on task 02's pending browser evidence. Tasks **07-09 have component implementations**, with live API and browser evidence pending. Tasks **05-06 and 10-13 remain unassigned**. See the handoffs linked below for exact validation and limitations. The canonical product, architecture, privacy, and testing specifications remain authoritative.
+This guide turns the [implementation plan](plan.md) into **13 assignable work packages**. Audited 2026-11-17: task **01 is complete**, **02 has partial browser evidence**, and **03-09 have component implementations**. **10 is implemented locally**, while **11-13 have partial implementations and explicit outstanding acceptance work**. Credential/provider enablement remains gated, and no live feed or release readiness is claimed. See the [completion audit](completion-audit.md) and handoffs below. The canonical product, architecture, privacy, and testing specifications remain authoritative.
 
 ## Start here
 
@@ -21,10 +21,10 @@ Keep one coordinating/integration owner responsible for accepting handoffs, shar
 | 07 | [TypeSafe Jev](tasks/07-jev-provider.md) | 01; 03 for final semantic tests | **Component implemented**: [handoff](evidence/07-jev.md); live/browser evidence pending |
 | 08 | [OpenAI](tasks/08-openai-provider.md) | 01; 03 for final semantic tests | **Component implemented**: [handoff](evidence/08-openai.md); live/browser evidence pending |
 | 09 | [Anthropic](tasks/09-anthropic-provider.md) | 01; 03 for final semantic tests | **Component implemented**: [handoff](evidence/09-anthropic.md); live/browser evidence pending |
-| 10 | [Website](tasks/10-website.md) | 01, 03; 06 token contract | Static site and synthetic demo |
-| 11 | [Runtime integration](tasks/11-runtime-integration.md) | 02–06 for fake flow; 07–09 for full flow | Working packaged extension |
-| 12 | [Evaluation and hardening](tasks/12-evaluation-and-hardening.md) | 01/03 to prepare; 10/11 to finish | Independent quality and release evidence |
-| 13 | [Release preparation](tasks/13-release-preparation.md) | 10–12 and release decisions | Reviewable release candidate and launch checklist |
+| 10 | [Website](tasks/10-website.md) | 01, 03; 06 token contract | **Implemented locally** — [website handoff](evidence/10-website.md); manual browser and public facts pending |
+| 11 | [Runtime integration](tasks/11-runtime-integration.md) | 02–06 for fake flow; 07–09 for full flow | **Partial** — [settings broker and injected offline flow](evidence/11-runtime.md); production inference and packaged-browser acceptance pending |
+| 12 | [Evaluation and hardening](tasks/12-evaluation-and-hardening.md) | 01/03 to prepare; 10/11 to finish | **Partial** — [metrics and local regression tooling](evidence/12-validation.md); independent corpus, live metrics, and manual checks pending |
+| 13 | [Release preparation](tasks/13-release-preparation.md) | 10–12 and release decisions | **Partial** — [review bundle and gate ledger](evidence/13-release.md); accepted clean tag, signing, owner decisions, and launch approval pending |
 
 ## Practical schedule with three worker slots
 

@@ -47,6 +47,6 @@ Check keyboard-only onboarding and settings, focus inside posts when collapse is
 
 ## Intended CI commands
 
-Task 01 provides root scripts named `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:integration`, `pnpm build`, `pnpm package:chrome`, `pnpm package:firefox`, and `pnpm docs:check`. `test:integration` deliberately exits 2 with NOT IMPLEMENTED until tasks 02/11 supply real packaged-browser coverage. Live provider evaluations are separately invoked and budgeted, not an unconditional PR check.
+Root scripts include `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:integration`, `pnpm build`, `pnpm package:chrome`, `pnpm package:firefox`, and `pnpm docs:check`. As of 2026-11-17, `test:integration` builds the website and runs local injected runtime/DOM/demo regressions; it is not packaged-browser coverage. `site:check` inspects generated page links, assets, labels, and notices. `pnpm evaluate input.json report.json` validates independently labelled outcomes and produces held-out metrics; live provider execution is separately authorized and budgeted, not an unconditional PR check. See [validation evidence](evidence/12-validation.md).
 
 CI installs from the frozen lockfile, runs checks, scans artifacts for secrets and remote code, validates manifests, builds website and packages, and records checksums. Store credentials are available only to the protected release job; untrusted pull requests cannot access them. Prompt/model/taxonomy changes require the evaluation report in addition to ordinary CI.

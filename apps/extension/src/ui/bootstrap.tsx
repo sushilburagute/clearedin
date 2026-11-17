@@ -7,16 +7,16 @@ import {
   createDemoSession,
   createOptionsController,
   createPopupController,
-  createUnavailableClient,
   UNAVAILABLE_ENVIRONMENT,
 } from '@clearedin/ui';
 import '@clearedin/ui/styles.css';
+import { createRuntimeClient } from './client';
 
-/** Task 11 supplies real clients/capabilities. This build has no credential or network path. */
+/** Real local settings transport; provider and credential capabilities remain gated. */
 export function OptionsApp() {
   const [demo, setDemo] = useState(false);
   const [controller, setController] = useState(() =>
-    createOptionsController(createUnavailableClient(), UNAVAILABLE_ENVIRONMENT),
+    createOptionsController(createRuntimeClient(), UNAVAILABLE_ENVIRONMENT),
   );
   return (
     <>
@@ -28,7 +28,7 @@ export function OptionsApp() {
             if (demo)
               setController(
                 createOptionsController(
-                  createUnavailableClient(),
+                  createRuntimeClient(),
                   UNAVAILABLE_ENVIRONMENT,
                 ),
               );
@@ -56,7 +56,7 @@ export function OptionsApp() {
 
 export function PopupApp() {
   const [controller] = useState(() =>
-    createPopupController(createUnavailableClient()),
+    createPopupController(createRuntimeClient()),
   );
   return (
     <PopupSurface

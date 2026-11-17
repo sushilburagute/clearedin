@@ -3,7 +3,11 @@ import { CATEGORY_IDS } from '../../packages/contracts/src/index';
 import { EVALUATION_CORPUS } from '../../packages/test-fixtures/src/evaluation/corpus';
 import { POLICY_FIXTURES } from '../../packages/test-fixtures/src/policy/index';
 import { createVisibilityEvaluator } from '../../packages/decision-engine/src/index';
-import { assessQuality, summarize, type Observation } from './metrics';
+import {
+  assessQuality,
+  summarize,
+  type Observation,
+} from './observation-metrics';
 const sample: Observation = {
   expectedHidden: true,
   hidden: true,

@@ -1,4 +1,5 @@
 ---
+import '@clearedin/ui/styles.css';
 import '../styles/site.css';
 interface Props {
   title: string;
@@ -6,59 +7,62 @@ interface Props {
 }
 const { title, description } = Astro.props;
 const links = [
-  ['/', 'Home'],
   ['/how-it-works/', 'How it works'],
-  ['/demo/', 'Synthetic demo'],
+  ['/demo/', 'Try the demo'],
   ['/install/', 'Install'],
-  ['/setup/', 'Provider setup'],
   ['/privacy/', 'Privacy'],
-  ['/support/', 'FAQ & support'],
-  ['/changelog/', 'Changelog'],
+  ['/support/', 'Help'],
 ];
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
     <meta name="description" content={description} />
-    <meta name="robots" content="noindex, nofollow" />
-    <title>{title} | ClearedIn preview</title>
+    <meta name="theme-color" content="#0F766E" />
+    <title>{title} | ClearedIn</title>
   </head>
   <body>
     <a class="skip" href="#main">
       Skip to content
     </a>
-    <header>
-      <a class="brand" href="/">
-        ClearedIn
+    <header class="site-header">
+      <a href="/" class="wordmark" aria-label="ClearedIn home">
+        ClearedIn<span aria-hidden="true">✳</span>
       </a>
-      <p>Development preview · Not available to install</p>
       <nav aria-label="Main navigation">
-        {links.map(([url, label]) => (
+        {links.map(([href, label]) => (
           <a
-            href={url}
-            aria-current={Astro.url.pathname === url ? 'page' : undefined}
+            href={href}
+            aria-current={Astro.url.pathname === href ? 'page' : undefined}
           >
             {label}
           </a>
         ))}
       </nav>
     </header>
-    <main id="main">
+    <div class="preview">
+      Development preview. Live feed filtering and store installation are not
+      available.
+    </div>
+    <main id="main" tabindex="-1">
       <slot />
     </main>
     <footer>
-      <p>
-        Your feed, your choices. Classification can be wrong; you stay in
-        control.
-      </p>
-      <p>
-        Operator, support contact, domain and hosting details are pending
-        release decisions. No affiliation or endorsement by LinkedIn or model
-        providers is implied.
-      </p>
+      <p>Your categories. Your call.</p>
+      <nav aria-label="More information">
+        <a href="/setup/">Provider setup</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/support/">FAQ &amp; support</a>
+        <a href="/changelog/">Changelog</a>
+      </nav>
+      <small>
+        Independent development project. Not affiliated with LinkedIn. Operator
+        and support contact pending before release.
+      </small>
     </footer>
   </body>
 </html>

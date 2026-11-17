@@ -1,12 +1,12 @@
 # Release gate ledger
 
-Candidate: development branch feat/website-runtime-release. Public launch recommendation: NOT READY. Accountable roles below are unassigned; the user must name actual people before approval. No approval is inferred.
+Candidate: development source; record the accepted commit when reviewing. Public launch recommendation: NOT READY. The authoritative machine-readable status is in [gates.json](gates.json). Accountable roles below are unassigned; actual people must be named before approval. No approval is inferred.
 
 | Gate | State | Evidence / remaining action | Accountable owner |
 | --- | --- | --- | --- |
 | Platform position | pending | Product owner records distribution/legal decision; recheck applicable policy on actual submission date | Product owner: UNASSIGNED |
 | Provider feasibility | pending | Evidence 02 and 07–09; live/browser and credential custody decisions outstanding; no supported remote configuration advertised | Technical lead: UNASSIGNED |
-| Product scope | pending | Tasks 05/06 empty prerequisites; full feed stories cannot be accepted | Product owner: UNASSIGNED |
+| Product scope | pending | Tasks 05/06 have synthetic-tested components; production wiring and packaged feed stories remain unaccepted | Product owner: UNASSIGNED |
 | Quality | pending | Task 12 synthetic regression harness; independent human annotation and live held-out metrics outstanding | QA owner: UNASSIGNED |
 | Security | pending | Basic artifact checks do not replace dependency/license/threat review or comprehensive secret scan | Security owner: UNASSIGNED |
 | Privacy | pending | Operator, support, provider custody and actual host logs unresolved | Privacy owner: UNASSIGNED |

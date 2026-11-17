@@ -166,6 +166,21 @@ importers:
 
   .:
     devDependencies:
+      '@clearedin/contracts':
+        specifier: workspace:*
+        version: link:packages/contracts
+      '@clearedin/decision-engine':
+        specifier: workspace:*
+        version: link:packages/decision-engine
+      '@clearedin/linkedin-adapter':
+        specifier: workspace:*
+        version: link:packages/linkedin-adapter
+      '@clearedin/storage':
+        specifier: workspace:*
+        version: link:packages/storage
+      '@clearedin/test-fixtures':
+        specifier: workspace:*
+        version: link:packages/test-fixtures
       '@eslint/js':
         specifier: 10.0.1
         version: 10.0.1(eslint@10.15.0(jiti@2.7.0))
@@ -178,6 +193,9 @@ importers:
       eslint-plugin-astro:
         specifier: 3.2.1
         version: 3.2.1(@typescript-eslint/parser@8.72.2(eslint@10.15.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.15.0(jiti@2.7.0))(typescript-eslint@8.72.2(eslint@10.15.0(jiti@2.7.0))(typescript@5.9.3))
+      linkedom:
+        specifier: 0.18.15
+        version: 0.18.15
       prettier:
         specifier: 3.10.1
         version: 3.10.1
@@ -242,6 +260,9 @@ importers:
       '@clearedin/test-fixtures':
         specifier: workspace:*
         version: link:../../packages/test-fixtures
+      '@clearedin/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       astro:
         specifier: 7.4.12
         version: 7.4.12(@types/node@24.19.2)(jiti@2.7.0)(yaml@2.9.1)

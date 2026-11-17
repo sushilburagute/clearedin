@@ -1,6 +1,6 @@
 # 02 — Browser and credential feasibility
 
-Status: unassigned; no implementation started by this brief.
+Status: partial feasibility evidence exists for Chrome and Firefox; persistent-install restart and interactive permission gates remain open. See the [handoff](../evidence/02-browser-feasibility.md).
 
 ## Dependencies
 
