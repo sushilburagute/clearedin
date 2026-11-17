@@ -1,4 +1,4 @@
-name: Foundation checks
+name: Repository checks
 on:
   push:
   pull_request:
@@ -23,10 +23,17 @@ jobs:
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm test:integration
+      - run: pnpm site:check
       - run: pnpm docs:check
       - run: pnpm build
       - run: pnpm package:chrome
       - run: pnpm package:firefox
       - run: pnpm artifacts:check
-      # Integration tests are explicitly unavailable until tasks 02/11 implement them.
+      - run: pnpm release:prepare
+      - uses: actions/upload-artifact@v4
+        with:
+          name: development-review-bundle
+          path: .release/
+      # Local integration is synthetic; packaged-browser/manual release gates remain separate.
       # No deployment, signing, provider secrets, or publishing in this workflow.

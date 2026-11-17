@@ -9,4 +9,5 @@ coverage/
 .env.*
 !.env.example
 *.log
+.release/
 .DS_Store

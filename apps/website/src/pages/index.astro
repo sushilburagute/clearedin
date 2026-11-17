@@ -1,23 +1,85 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="noindex" />
-    <title>ClearedIn — development preview</title>
-    <meta
-      name="description"
-      content="ClearedIn development foundation. The product is not available yet."
-    />
-  </head>
-  <body>
-    <main>
-      <h1>ClearedIn</h1>
-      <p>A tool for choosing which categories appear in your feed.</p>
-      <p>
-        Development preview. The extension, provider connections, and filtering
-        are not available yet.
+---
+import Site from '../layouts/Site.astro';
+---
+
+<Site
+  title="Your feed, your choices"
+  description="Explore category controls for your LinkedIn home feed in a free, synthetic demo. Development preview; live filtering is not yet available."
+>
+  <section class="hero">
+    <div>
+      <h1>Your feed, your choices.</h1>
+      <p class="lead">
+        More of what you came for. Choose the categories you want to see, hide
+        the ones you don’t, and keep the final say.
       </p>
-    </main>
-  </body>
-</html>
+      <div class="actions">
+        <a class="button" href="/demo/">
+          Try the synthetic demo
+        </a>
+        <a href="/how-it-works/">See how the rules work</a>
+      </div>
+      <p>No account. No API key. Just sample posts.</p>
+    </div>
+    <div
+      class="sample-feed"
+      aria-label="Illustrative feed rules, not live predictions"
+    >
+      <p>Synthetic feed preview</p>
+      <article>
+        <strong>A compiler launch with real benchmarks</strong>
+        <p>
+          A launch can also be useful technical content. Your “Always show” rule
+          takes priority.
+        </p>
+        <span class="rule">Always show: Technical content</span>
+      </article>
+      <article>
+        <strong>Hidden: Engagement bait</strong>
+        <p>
+          Hidden posts keep a reveal control. Change your mind whenever you
+          like.
+        </p>
+        <a href="/demo/">Try hiding and revealing a sample</a>
+      </article>
+      <article>
+        <strong>Something big is coming…</strong>
+        <p>Not enough context? It stays visible.</p>
+        <span class="rule">Visible: Uncertain classification</span>
+      </article>
+    </div>
+  </section>
+  <section class="principles" aria-label="Your controls">
+    <div>
+      <h2>Choose by category</h2>
+      <p>
+        Job postings, referrals, technical content, product launches, and more.
+        Every category starts visible.
+      </p>
+    </div>
+    <div>
+      <h2>Protect what matters</h2>
+      <p>
+        “Always show” wins over a hidden category. “Show normally” leaves other
+        rules in place.
+      </p>
+    </div>
+    <div>
+      <h2>Keep an easy way back</h2>
+      <p>
+        Reveal a post, pause filtering, or withdraw consent. The intended
+        behavior is to restore your feed.
+      </p>
+    </div>
+  </section>
+  <section class="closing">
+    <h2>Understand it before you connect it.</h2>
+    <p>
+      The demo runs entirely on fixed synthetic examples. Future live
+      classification would send minimized post text to your selected provider
+      and may incur API charges. No provider connection is available in this
+      preview.
+    </p>
+    <a href="/privacy/">Read about data and privacy</a>
+  </section>
+</Site>

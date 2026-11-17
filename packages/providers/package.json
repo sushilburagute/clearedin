@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./registry": "./src/registry.ts",
     "./types": "./src/types.ts",
     "./typesafe": "./src/typesafe/index.ts",
     "./openai": "./src/openai/index.ts",

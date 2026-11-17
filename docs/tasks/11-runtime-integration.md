@@ -1,6 +1,6 @@
 # 11 — Extension coordinator and end-to-end integration
 
-Status: unassigned; no implementation started by this brief.
+Status: partial. Local settings broker, validated UI transport, injected coordinator/scheduler/content lifecycle, and offline integration tests exist. Production inference and packaged-browser acceptance remain pending. See the [handoff](../evidence/11-runtime.md).
 
 ## Dependencies
 

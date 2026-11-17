@@ -1,6 +1,6 @@
 # 06 — Extension onboarding, popup, and settings UI
 
-Status: component implemented against injected clients and explicit synthetic mocks. See the [handoff](../evidence/06-extension-ui.md). Production messaging belongs to task 11; manual accessibility/browser validation remains pending.
+Status: component implemented against typed clients and explicit synthetic mocks. See the [component handoff](../evidence/06-extension-ui.md) and the newer [local settings transport handoff](../evidence/11-runtime.md). Live provider setup and manual accessibility/browser validation remain pending.
 
 ## Dependencies
 

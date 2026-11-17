@@ -1,6 +1,6 @@
 # ClearedIn documentation
 
-Status: component implementation baseline, updated 2026-11-16. The foundation, [taxonomy/policy](evidence/03-taxonomy-and-policy.md), [injected storage primitives](evidence/04-storage-and-credentials.md), [synthetic-tested DOM adapter](evidence/05-feed-dom-adapter.md), and [extension UI](evidence/06-extension-ui.md) are implemented. [Browser feasibility](evidence/02-browser-feasibility.md) has partial evidence with production credential gates still open. Live selector compatibility, production UI transport, manual accessibility, runtime filtering, provider integration, and production infrastructure remain future work. See the [foundation handoff](evidence/01-foundation.md). “ClearedIn” is a working name derived from the repository.
+Status: audited 2026-11-17. Components and three provider adapters exist. Local settings transport, an injected offline integration flow, an eight-page website/synthetic demo, evaluation tooling, and release preparation have been added. Live provider access, production feed wiring, packaged-browser acceptance, manual accessibility, independent quality evaluation, and release-owner decisions remain open. Start with the [completion audit](completion-audit.md) and [release gate ledger](release/gates.json). “ClearedIn” remains a working name.
 
 ClearedIn gives people control over the categories they see in their LinkedIn home feed. A browser extension extracts post text, asks a user-selected AI provider for category judgments, and applies the user's visibility rules locally. The website explains the product, demonstrates it with synthetic content, and provides installation and support documentation.
 
@@ -21,6 +21,8 @@ The requested providers are **TypeSafe Jev, OpenAI, and Anthropic**. Jev is a ty
 11. [Operations runbook](operations-runbook.md): diagnostics, incidents, and recovery.
 12. [Decisions and open questions](decisions-and-open-questions.md): assumptions and unresolved choices.
 13. [Sources](sources.md): primary references checked for this proposal.
+14. [Completion audit](completion-audit.md): current implementation, validation, and remaining gaps.
+15. [Release preparation](release/README.md): review bundle, reproducible checks, and deployment/recovery instructions.
 
 
 ## Assigning the build

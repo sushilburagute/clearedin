@@ -68,8 +68,9 @@ export function PopupSurface({
     <Frame popup demo={mode === 'demo'}>
       {mode === 'unavailable' && (
         <Notice>
-          Development build: filtering and provider connections are not wired
-          yet. Open settings to explore the synthetic demo.
+          Development build: live filtering and provider connections are
+          unavailable. Open settings to save local rules or explore the
+          synthetic demo.
         </Notice>
       )}
       {state.loading && <p role="status">Loading extension status…</p>}
@@ -303,9 +304,9 @@ export function OptionsSurface({
     <Frame demo={environment.mode === 'demo'}>
       {environment.mode === 'unavailable' && (
         <Notice>
-          Development build: runtime integration is pending. Provider
-          connections and filtering are unavailable. Do not enter API keys into
-          this build.
+          Development build: category settings are saved locally. Provider
+          connections and live filtering are unavailable. Do not enter API keys
+          into this build.
         </Notice>
       )}
       <p>

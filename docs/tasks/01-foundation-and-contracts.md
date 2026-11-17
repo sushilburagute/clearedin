@@ -11,7 +11,7 @@ Status: **complete**, 2026-11-16, on `feat/01-foundation-and-contracts`. See the
 - [x] Static website build, Chrome/Firefox MV3 packaging, manifest checks, and ZIP/build byte parity.
 - [x] Public interface map and downstream ownership handoff documented.
 
-Packaged-browser execution, live-provider feasibility, filtering behavior, and production release gates belong to later tasks. `pnpm test:integration` reports NOT IMPLEMENTED with exit code 2; it is not counted as a passing test suite.
+Packaged-browser execution, live-provider feasibility, filtering behavior, and production release gates belong to later tasks. The original integration placeholder has since been replaced with [local injected integration tests](../evidence/11-runtime.md); these are not packaged-browser acceptance.
 
 ## Dependencies
 

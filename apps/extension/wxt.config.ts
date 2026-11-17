@@ -1,13 +1,20 @@
 import { defineConfig } from 'wxt';
 
+// WXT forwards these to unimport/unplugin, but its public type omits the
+// plugin's exclude option. Keep a structural value with the shared dirs field.
+const explicitImports = { dirs: [], exclude: [/.*/] };
+
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
+  // All imports are explicit. Auto-import rewriting can mistake injected
+  // browser ports in shared packages for the privileged WXT browser global.
+  imports: explicitImports,
   manifestVersion: 3,
   manifest: ({ browser }) => ({
     name: 'ClearedIn Development',
     description:
-      'Development foundation for user-controlled feed filtering. Filtering is not implemented.',
-    permissions: [],
+      'Development preview with local category settings and synthetic demos. Live filtering is unavailable.',
+    permissions: ['storage'],
     ...(browser === 'firefox'
       ? {
           browser_specific_settings: {
@@ -15,7 +22,7 @@ export default defineConfig({
               // Development identity only. Review before public distribution.
               id: 'development@clearedin.invalid',
               strict_min_version: '140.0',
-              // Accurate only for this inert scaffold. Revisit before adding providers.
+              // No remote data transmission. Revisit before enabling providers.
               data_collection_permissions: { required: ['none'] },
             },
           },

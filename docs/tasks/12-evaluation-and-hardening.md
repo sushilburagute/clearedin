@@ -1,6 +1,6 @@
 # 12 — Independent evaluation and production hardening
 
-Status: unassigned; no implementation started by this brief.
+Status: partial. Local integration regressions and an evaluation metrics/input-validation CLI exist; independent annotations, live quality, and manual browser/performance evidence remain pending. See the [handoff](../evidence/12-validation.md).
 
 ## Dependencies
 

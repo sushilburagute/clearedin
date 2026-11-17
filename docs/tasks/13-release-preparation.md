@@ -1,6 +1,6 @@
 # 13 — Release packaging, operational docs, and launch preparation
 
-Status: unassigned; no implementation started by this brief.
+Status: partial. A complete-source review bundle generator, hashes, release ledger, and reviewer/recovery instructions exist. Named owners, accepted clean-tag artifacts, signing, deployment facts, and launch acceptance remain pending. See the [handoff](../evidence/13-release.md).
 
 ## Dependencies
 

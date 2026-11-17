@@ -1,0 +1,68 @@
+---
+import '@clearedin/ui/styles.css';
+import '../styles/site.css';
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const links = [
+  ['/how-it-works/', 'How it works'],
+  ['/demo/', 'Try the demo'],
+  ['/install/', 'Install'],
+  ['/privacy/', 'Privacy'],
+  ['/support/', 'Help'],
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0F766E" />
+    <title>{title} | ClearedIn</title>
+  </head>
+  <body>
+    <a class="skip" href="#main">
+      Skip to content
+    </a>
+    <header class="site-header">
+      <a href="/" class="wordmark" aria-label="ClearedIn home">
+        ClearedIn<span aria-hidden="true">✳</span>
+      </a>
+      <nav aria-label="Main navigation">
+        {links.map(([href, label]) => (
+          <a
+            href={href}
+            aria-current={Astro.url.pathname === href ? 'page' : undefined}
+          >
+            {label}
+          </a>
+        ))}
+      </nav>
+    </header>
+    <div class="preview">
+      Development preview. Live feed filtering and store installation are not
+      available.
+    </div>
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <footer>
+      <p>Your categories. Your call.</p>
+      <nav aria-label="More information">
+        <a href="/setup/">Provider setup</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/support/">FAQ &amp; support</a>
+        <a href="/changelog/">Changelog</a>
+      </nav>
+      <small>
+        Independent development project. Not affiliated with LinkedIn. Operator
+        and support contact pending before release.
+      </small>
+    </footer>
+  </body>
+</html>

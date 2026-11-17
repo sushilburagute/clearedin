@@ -9,6 +9,11 @@
     "build": "astro build"
   },
   "dependencies": {
+    "@clearedin/contracts": "workspace:*",
+    "@clearedin/decision-engine": "workspace:*",
+    "@clearedin/taxonomy": "workspace:*",
+    "@clearedin/test-fixtures": "workspace:*",
+    "@clearedin/ui": "workspace:*",
     "astro": "7.4.12"
   },
   "devDependencies": {
