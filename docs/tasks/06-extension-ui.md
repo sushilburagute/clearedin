@@ -1,6 +1,6 @@
 # 06 — Extension onboarding, popup, and settings UI
 
-Status: unassigned; no implementation started by this brief.
+Status: component implemented against injected clients and explicit synthetic mocks. See the [handoff](../evidence/06-extension-ui.md). Production messaging belongs to task 11; manual accessibility/browser validation remains pending.
 
 ## Dependencies
 

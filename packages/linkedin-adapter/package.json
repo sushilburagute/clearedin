@@ -8,6 +8,11 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@clearedin/contracts": "workspace:*"
+    "@clearedin/contracts": "workspace:*",
+    "@clearedin/taxonomy": "workspace:*"
+  },
+  "devDependencies": {
+    "@clearedin/test-fixtures": "workspace:*",
+    "linkedom": "0.18.15"
   }
 }
