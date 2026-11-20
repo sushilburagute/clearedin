@@ -8,18 +8,24 @@ import { fileURLToPath } from 'node:url';
 import { createConnection } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startFixtureServer } from './serve.mjs';
+import { checkSettings } from './settings-check.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const family = process.argv[2];
+const settingsCheck = process.argv.includes('--settings');
 if (!['chrome', 'firefox'].includes(family))
   throw new Error('Specify chrome or firefox');
 const binary =
-  process.argv[3] ??
+  process.argv.slice(3).find((arg) => arg !== '--settings') ??
   (family === 'chrome'
     ? 'C:/Program Files/Google/Chrome/Application/chrome.exe'
     : 'C:/Program Files/Mozilla Firefox/firefox.exe');
 const profile = await mkdtemp(resolve(tmpdir(), `clearedin-probe-${family}-`));
-const output = resolve(directory, '.output', `${family}-mv3`);
+const outputDirectory = resolve(
+  directory,
+  settingsCheck ? '../../apps/extension/.output' : '.output',
+);
+const output = resolve(outputDirectory, `${family}-mv3`);
 const results = {
   family,
   profile,
@@ -177,6 +183,19 @@ async function chrome() {
     });
     const id = loaded.id;
     check('packaged WXT extension loaded', Boolean(id));
+    if (settingsCheck) {
+      let tab;
+      await checkSettings(
+        async () => {
+          if (tab) await tab.close();
+          tab = await page(`chrome-extension://${id}/options.html`);
+          return tab.evaluate;
+        },
+        until,
+        check,
+      );
+      return;
+    }
     let options = await page(`chrome-extension://${id}/options.html`);
     const snapshot = async () =>
       options.evaluate("chrome.runtime.sendMessage({type:'PROBE_SNAPSHOT'})");
@@ -427,19 +446,42 @@ async function firefox() {
   };
   try {
     await start();
-    const installed = await send('Addon:Install', {
-      path: resolve(
-        directory,
-        '.output/clearedinbrowser-feasibility-probe-0.1.0-firefox.zip',
+    const extensionPackage = JSON.parse(
+      await readFile(
+        resolve(
+          directory,
+          settingsCheck ? '../../apps/extension/package.json' : 'package.json',
+        ),
+        'utf8',
       ),
+    );
+    const archive = `${extensionPackage.name.replace(/[^a-z0-9-]/gi, '')}-${extensionPackage.version}-firefox.zip`;
+    const installed = await send('Addon:Install', {
+      path: resolve(outputDirectory, archive),
       temporary: true,
     });
     check('packaged WXT ZIP temporary add-on loaded', Boolean(installed));
     await send('Marionette:SetContext', { value: 'chrome' });
+    const manifest = JSON.parse(
+      await readFile(resolve(output, 'manifest.json'), 'utf8'),
+    );
+    const extensionId = manifest.browser_specific_settings.gecko.id;
     const baseUrl = await evaluate(
-      "return ChromeUtils.importESModule('resource://gre/modules/ExtensionParent.sys.mjs').ExtensionParent.GlobalManager.getExtension('browser-probe@clearedin.invalid').baseURI.spec;",
+      `return ChromeUtils.importESModule('resource://gre/modules/ExtensionParent.sys.mjs').ExtensionParent.GlobalManager.getExtension(${JSON.stringify(extensionId)}).baseURI.spec;`,
     );
     await send('Marionette:SetContext', { value: 'content' });
+    if (settingsCheck) {
+      await checkSettings(
+        async () => {
+          await navigate('about:blank');
+          await navigate(`${baseUrl}options.html`);
+          return (expression) => evaluate(`return ${expression};`);
+        },
+        until,
+        check,
+      );
+      return;
+    }
     await navigate(`${baseUrl}options.html`);
     await until(
       () => evaluate("return Boolean(document.querySelector('#seed'));"),
@@ -559,11 +601,12 @@ async function firefox() {
 
 let server;
 try {
-  server = await startFixtureServer();
+  if (!settingsCheck) server = await startFixtureServer();
   await (family === 'chrome' ? chrome() : firefox());
-  results.pending.push(
-    'Optional host request prompt: grant, denial, and revocation require interactive checking. Only initial absence was automated.',
-  );
+  if (!settingsCheck)
+    results.pending.push(
+      'Optional host request prompt: grant, denial, and revocation require interactive checking. Only initial absence was automated.',
+    );
 } catch (error) {
   results.error = error.message;
   console.error(error.message);
@@ -572,7 +615,11 @@ try {
   if (server) await new Promise((resolve) => server.close(resolve));
   await mkdir(resolve(directory, 'results'), { recursive: true });
   await writeFile(
-    resolve(directory, 'results', `${family}.json`),
+    resolve(
+      directory,
+      'results',
+      `${family}${settingsCheck ? '-settings' : ''}.json`,
+    ),
     JSON.stringify(results, null, 2) + '\n',
   );
   if (results.checks.some((item) => !item.passed)) process.exitCode = 1;

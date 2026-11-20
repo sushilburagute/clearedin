@@ -154,12 +154,15 @@ export function createStorage(input: {
       },
     },
     /** Coordinator first aborts requests/restores posts, then awaits this reset. */
-    clearAll(expectedGeneration: number) {
+    clearAll(expectedGeneration?: number) {
       return context.run(async () => {
-        await checkResetGeneration(context, expectedGeneration);
+        const generation = await checkResetGeneration(
+          context,
+          expectedGeneration,
+        );
         const snapshot = {
           settings: createDefaultSettings(),
-          enablementGeneration: nextGeneration(expectedGeneration),
+          enablementGeneration: nextGeneration(generation),
         };
         // Persist a non-secret disabled generation tombstone first. A crash cannot
         // leave a previously enabled configuration or revive old callbacks.
@@ -178,12 +181,15 @@ export function createStorage(input: {
         return snapshot;
       }, true);
     },
-    disconnect(provider: ProviderId, expectedGeneration: number) {
+    disconnect(provider: ProviderId, expectedGeneration?: number) {
       if (!ProviderIdSchema.safeParse(provider).success)
         return Promise.reject(new StorageError('invalid_request'));
       const selected = provider;
       return context.run(async () => {
-        await checkResetGeneration(context, expectedGeneration);
+        const generation = await checkResetGeneration(
+          context,
+          expectedGeneration,
+        );
         try {
           const previous = await context.readSettings();
           const snapshot = {
@@ -197,7 +203,7 @@ export function createStorage(input: {
                     consent: null,
                   }
                 : previous.settings,
-            enablementGeneration: nextGeneration(expectedGeneration),
+            enablementGeneration: nextGeneration(generation),
           };
           await context.saveSettings(snapshot);
           // Billing reservations survive disconnect/reconnect; they are not refunds.

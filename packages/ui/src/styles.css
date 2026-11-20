@@ -51,6 +51,12 @@ body {
   padding: 32px 24px 48px;
   margin-inline: auto;
 }
+.ci-mode-switch {
+  max-width: 960px;
+  margin-inline: auto;
+  padding: 16px 24px 0;
+  text-align: right;
+}
 .ci-popup {
   width: 360px;
   max-width: 100vw;
@@ -85,9 +91,37 @@ body {
   font-weight: 700;
   color: var(--ci-accent);
 }
-.ci-app section {
+.ci-app section,
+.ci-setup-details {
   border-top: 1px solid var(--ci-border);
   padding: 24px 0;
+}
+.ci-setup-details summary {
+  align-content: center;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--ci-accent);
+}
+.ci-setup-details summary h2 {
+  display: inline;
+}
+.ci-setup-details[open] summary {
+  margin-bottom: 16px;
+}
+.ci-settings-nav {
+  display: flex;
+  gap: 0 20px;
+  flex-wrap: wrap;
+  margin: 16px 0 24px;
+}
+.ci-settings-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 600;
+}
+.ci-options h2[id] {
+  scroll-margin-top: 16px;
 }
 .ci-app button,
 .ci-app input,
@@ -180,6 +214,7 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  align-items: center;
 }
 .ci-notice,
 .ci-demo {
@@ -207,6 +242,10 @@ body {
   margin: 24px 0;
 }
 .ci-stats div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
   padding: 8px 0;
   border-bottom: 1px solid var(--ci-border);
 }
@@ -214,7 +253,7 @@ body {
   color: var(--ci-muted);
 }
 .ci-stats dd {
-  margin: 4px 0 0;
+  margin: 0;
   font-weight: 600;
 }
 .ci-app a {
@@ -222,6 +261,10 @@ body {
   text-underline-offset: 3px;
 }
 @media (max-width: 600px) {
+  .ci-mode-switch {
+    padding: 16px 16px 0;
+    text-align: left;
+  }
   .ci-options {
     padding: 24px 16px;
   }

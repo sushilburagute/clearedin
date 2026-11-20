@@ -1,21 +1,12 @@
-# Development review and release preparation
+# Release and recovery
 
-This is a development review package, not an approved release candidate. See the [gap audit](../completion-audit.md) and [gate ledger](gates.json). No store listing, domain, operator identity, support contact, license choice, provider credential decision, or public distribution approval is invented here.
+ClearedIn is a development preview. The [release ledger](gates.json) records the status, accountable role, reason, and evidence for each launch decision. Public distribution requires a written platform decision, accepted provider and credential handling, quality and accessibility evidence, and named privacy, release, and incident owners. Verify policies on the submission date. [LinkedIn](https://www.linkedin.com/help/linkedin/answer/a1341387) · [Chrome Web Store](https://developer.chrome.com/docs/webstore/program-policies/user-data-faq) · [Mozilla Add-ons](https://extensionworkshop.com/documentation/publish/add-on-policies/)
 
-## Reproduce and inspect
+## Prepare a review bundle
 
-Use Node 24.22.3 and pnpm 12.4.1, the committed lockfile, and the same accepted source for every artifact:
+Start from the reviewed source and frozen lockfile. Run the [development checks](../../README.md#commands), including the integration build and site checks. Then run:
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm lint
-pnpm format:check
-pnpm typecheck
-pnpm test
-pnpm test:integration
-pnpm site:check
-pnpm docs:check
-pnpm build
 pnpm package:chrome
 pnpm package:firefox
 pnpm artifacts:check
@@ -23,24 +14,26 @@ pnpm release:prepare
 pnpm release:check
 ```
 
-The final command exits 2 while launch gates remain unresolved; do not mask it in a release job. CI's passing development checks are separate. `.release/inventory.json` records artifact/source SHA-256 values, current commit, dirty state, and Node version. Unzip `repository-source.zip` to a new directory, install with the frozen lockfile, and reproduce both browser builds and the site. An independent clean-tag rebuild remains required before submission. The source ZIP contains no `.git`; release preparation itself requires a Git checkout, but builds do not.
+The browser archives are under `apps/extension/.output/`. The static site is in `apps/website/dist/`. Artifact checks compare each browser ZIP with the inspected build. The WXT Firefox sources ZIP covers the extension only. Use `.release/repository-source.zip` for a full monorepo rebuild.
+
+`.release/inventory.json` records SHA-256 hashes, source commit, dirty state, and Node version. Release preparation needs a Git checkout. The archived source can be built without Git. Before submission, reproduce the packages independently from a clean tag and retain both inventories. The gate checker exits 2 while a decision is pending or failed.
 
 ## Reviewer walkthrough
 
-1. Use a disposable development browser profile. Inspect the generated Chrome/Firefox manifests: storage permission, feed-scoped inert content script, local-code CSP, no provider host permissions or remote executable code.
-2. Open extension options. Confirm all providers are unavailable and credential entry is disabled. Change a category and daily limit, save, close/reopen options, and check persistence. Recreate the background context and repeat. Clear all data and verify defaults return. These manual checks must be recorded; local tests do not establish browser behavior.
-3. Open the explicitly labelled synthetic UI demo. It simulates setup in memory without accepting a key. Exit to discard its changes. Confirm it has not changed persistent settings.
-4. Build/open the static website locally using the website dev command. Use the synthetic demo to hide engagement bait, hide product launches, protect technical content, reveal, pause, and reset. Check keyboard focus, screen-reader labels, 200% zoom, widths 360/768/1440px, dark mode, reduced motion, and forced colors. Record outcomes; no manual passes are claimed yet.
-5. Confirm no live feed is altered and no provider traffic occurs. Do not use real API credentials or real-feed screenshots in reviewer materials.
+1. Inspect both manifests for storage permission, the feed-scoped inert content script, local-code CSP, and absence of provider host access.
+2. In disposable profiles, verify local save, reopen, and reset. Run the [settings smoke checks](../testing-and-evaluation.md#browser-checks). Open and exit the synthetic setup demo and confirm that real preferences are intact.
+3. Exercise hide, protect, reveal, pause, and reset on the synthetic website. Use the [accessibility protocol](../../tests/accessibility/README.md) for keyboard, screen-reader, zoom, dark mode, and forced-color checks.
+4. Confirm the package’s actual network behavior and permissions match its privacy disclosure. Use synthetic content in reviewer screenshots. Record browser versions, artifact hashes, results, and known limitations.
 
-Draft development listing: “ClearedIn is a development preview of user-controlled feed category rules. Explore a synthetic demonstration and save local preferences. Live filtering and provider connections are not available.” This wording is for review only; final store copy must match the supported release and approved privacy disclosure.
+## Deployment and incidents
 
-Permission rationale: `storage` persists non-secret category preferences, limits, and future conservative request accounting. It does not authorize provider access. Feed matches are reserved for the currently inert content entrypoint. A future provider-enabled package needs exact optional origins, final disclosures, and renewed review.
+Publish only the reviewed static build when the host, domain, support contact, and listings are approved. Apply `apps/website/public/_headers` or equivalent host settings, then check HTTPS, CSP, links, and preview noindex on the deployed site. Retain the previous static artifact for rollback.
 
-## Website deployment and rollback
+| Incident | Immediate action and recovery |
+| --- | --- |
+| Incorrect hides, broken markup, or migration failure | Pause or disable filtering. Reproduce on synthetic markup or an old settings fixture. Ship a reviewed higher-version recovery package with compatible migrations and test the upgrade. |
+| Suspected key exposure or unintended transmission | Pause rollout and requests. Revoke the key at its issuer, remove the local credential, identify affected builds, and verify remediation before using a replacement. |
+| Provider outage or unexpected spending | Keep posts visible, inspect reservation counts and provider billing, and check rate limits and pricing. Resume only within the existing consent and budget. |
+| Website regression | Restore the previous immutable build and verify the deployed headers and links. |
 
-No deployment is performed. Once a host/domain/operator is accepted, publish only `apps/website/dist/` from the same reviewed source. Apply `public/_headers` where supported, otherwise configure equivalent HTTP headers. Verify HTTPS, CSP, no remote connections, redirects, preview noindex, and all internal links on the actual host. Keep previews private/noindex until public facts and support/install URLs are complete. Retain the previous immutable static artifact and restore that version to roll back the website.
-
-## Extension recovery and operations
-
-No previously published version exists in the supplied evidence; real prior-version upgrade acceptance is pending. Storage schema/migration regressions are covered by component tests. Before launch, record an upgrade exercise on the final installed packages. For an incident, users can pause/disable the extension; a release owner must build a higher-version recovery package from reviewed reverted code, preserve compatible migrations, rerun checks, and use the approved distribution channel. Do not assume a store permits downgrades or instant updates. Name the responder, support/privacy contacts, license, and signing owners in the ledger before release.
+Collect versions, sanitized error codes, impact, and synthetic reproduction steps. Keep keys, private posts, cookies, and unredacted screenshots out of support reports. Assign a responder and backup and record the fix and verified recovery in the release record.

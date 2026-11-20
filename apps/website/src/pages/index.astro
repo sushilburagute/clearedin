@@ -1,85 +1,53 @@
 ---
+import { createElement, Fragment as ReactFragment } from 'react';
 import Site from '../layouts/Site.astro';
+import { StudioHero, Studio, type StudioProps } from '../components/Studio';
+import { CATEGORY_DEFINITION_BY_ID } from '@clearedin/taxonomy';
+import { SYNTHETIC_FIXTURES } from '@clearedin/test-fixtures/fake-classifier';
+import { buildDemoPolicies } from '../demo-policy';
+const policies = await buildDemoPolicies();
+const samples = [
+  ['job-referral', 'job_posting', 'briefcase'],
+  ['engagement-bait', 'engagement_bait', 'chat'],
+  ['technical-launch', 'technical_content', 'code'],
+  ['consulting-milestone', 'promotion', 'spark'],
+] as const;
+const props: StudioProps = {
+  posts: samples.map(([id, category, icon]) => ({
+    id,
+    category,
+    icon,
+    label: CATEGORY_DEFINITION_BY_ID[category].label,
+    text: SYNTHETIC_FIXTURES.find((post) => post.id === id)!.text.replace(
+      '[Synthetic example] ',
+      '',
+    ),
+    policy: policies.get(id)!,
+  })),
+};
+const page = createElement(
+  ReactFragment,
+  null,
+  createElement(StudioHero),
+  createElement(
+    'div',
+    { id: 'studio-root', 'data-studio': JSON.stringify(props) },
+    createElement(Studio, props),
+  ),
+);
 ---
 
 <Site
-  title="Your feed, your choices"
-  description="Explore category controls for your LinkedIn home feed in a free, synthetic demo. Development preview; live filtering is not yet available."
+  title="Feed studio"
+  description="Customize a sample LinkedIn feed with category rules and a job hunt preset."
+  page={page}
 >
-  <section class="hero">
-    <div>
-      <h1>Your feed, your choices.</h1>
-      <p class="lead">
-        More of what you came for. Choose the categories you want to see, hide
-        the ones you don’t, and keep the final say.
-      </p>
-      <div class="actions">
-        <a class="button" href="/demo/">
-          Try the synthetic demo
-        </a>
-        <a href="/how-it-works/">See how the rules work</a>
-      </div>
-      <p>No account. No API key. Just sample posts.</p>
-    </div>
-    <div
-      class="sample-feed"
-      aria-label="Illustrative feed rules, not live predictions"
-    >
-      <p>Synthetic feed preview</p>
-      <article>
-        <strong>A compiler launch with real benchmarks</strong>
-        <p>
-          A launch can also be useful technical content. Your “Always show” rule
-          takes priority.
-        </p>
-        <span class="rule">Always show: Technical content</span>
-      </article>
-      <article>
-        <strong>Hidden: Engagement bait</strong>
-        <p>
-          Hidden posts keep a reveal control. Change your mind whenever you
-          like.
-        </p>
-        <a href="/demo/">Try hiding and revealing a sample</a>
-      </article>
-      <article>
-        <strong>Something big is coming…</strong>
-        <p>Not enough context? It stays visible.</p>
-        <span class="rule">Visible: Uncertain classification</span>
-      </article>
-    </div>
-  </section>
-  <section class="principles" aria-label="Your controls">
-    <div>
-      <h2>Choose by category</h2>
-      <p>
-        Job postings, referrals, technical content, product launches, and more.
-        Every category starts visible.
-      </p>
-    </div>
-    <div>
-      <h2>Protect what matters</h2>
-      <p>
-        “Always show” wins over a hidden category. “Show normally” leaves other
-        rules in place.
-      </p>
-    </div>
-    <div>
-      <h2>Keep an easy way back</h2>
-      <p>
-        Reveal a post, pause filtering, or withdraw consent. The intended
-        behavior is to restore your feed.
-      </p>
-    </div>
-  </section>
-  <section class="closing">
-    <h2>Understand it before you connect it.</h2>
-    <p>
-      The demo runs entirely on fixed synthetic examples. Future live
-      classification would send minimized post text to your selected provider
-      and may incur API charges. No provider connection is available in this
-      preview.
-    </p>
-    <a href="/privacy/">Read about data and privacy</a>
-  </section>
+  <script>
+    import { createElement } from 'react';
+    import { hydrateRoot } from 'react-dom/client';
+    import { Studio, type StudioProps } from '../components/Studio';
+    const root = document.getElementById('studio-root')!;
+    const props = JSON.parse(root.dataset.studio!) as StudioProps;
+    hydrateRoot(root, createElement(Studio, props));
+  </script>
 </Site>

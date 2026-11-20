@@ -4,6 +4,7 @@ import {
   type BrowserPorts,
   type Clock,
   type MessageSender,
+  type PublicStatus,
   type ReplyMessage,
   type ErrorCode,
 } from '@clearedin/contracts';
@@ -24,6 +25,16 @@ export function createBroker(input: {
 }) {
   const storage = createStorage(input);
   let tail: Promise<unknown> = Promise.resolve();
+  async function readPreviewStatus(): Promise<PublicStatus> {
+    const status = await storage.public.readStatus();
+    return {
+      ...status,
+      enabled: false,
+      state: 'unavailable',
+      credentialConfigured: false,
+      error: status.error ?? { code: 'unsupported_provider', retryable: false },
+    };
+  }
   async function handle(
     raw: unknown,
     sender: MessageSender,
@@ -43,17 +54,10 @@ export function createBroker(input: {
     const request = authorized.request;
     try {
       if (request.type === 'GET_PUBLIC_STATUS') {
-        const status = await storage.public.readStatus();
         return {
           ...base,
           type: 'PUBLIC_STATUS',
-          status: {
-            ...status,
-            enabled: false,
-            state: 'unavailable',
-            credentialConfigured: false,
-            error: { code: 'unsupported_provider', retryable: false },
-          },
+          status: await readPreviewStatus(),
         };
       }
       if (request.type === 'GET_SETTINGS')
@@ -77,7 +81,7 @@ export function createBroker(input: {
         return {
           ...base,
           type: 'ACK',
-          enablementGeneration: (await storage.public.readStatus())
+          enablementGeneration: (await storage.settings.read())
             .enablementGeneration,
         };
       if (
@@ -94,20 +98,19 @@ export function createBroker(input: {
         request.consent.status === 'granted'
       )
         return error('unsupported_provider');
-      const previous = await storage.public.readStatus();
-      const generation = previous.enablementGeneration;
       let snapshot;
       let reason:
         'paused' | 'consent_withdrawn' | 'provider_changed' | 'data_cleared' =
         'paused';
       if (request.type === 'CLEAR_DATA') {
-        snapshot = await storage.clearAll(generation);
+        snapshot = await storage.clearAll();
         reason = 'data_cleared';
       } else if (request.type === 'DISCONNECT_PROVIDER') {
-        snapshot = await storage.disconnect(request.provider, generation);
+        snapshot = await storage.disconnect(request.provider);
         reason = 'provider_changed';
       } else {
-        const settings = await storage.public.readSettings();
+        const { settings, enablementGeneration: generation } =
+          await storage.settings.read();
         if (request.type === 'SET_PREFERENCES')
           snapshot = await storage.settings.write(
             { ...settings, ...request.preferences, enabled: false },
@@ -130,18 +133,15 @@ export function createBroker(input: {
           reason,
         })
         .catch(() => undefined);
-      const statusReply = await handle(
-        { ...base, type: 'GET_PUBLIC_STATUS' },
-        sender,
-      );
-      if (statusReply.type === 'PUBLIC_STATUS')
-        await input.browser
-          .broadcast({
+      await readPreviewStatus()
+        .then((status) =>
+          input.browser.broadcast({
             ...base,
             type: 'STATUS_CHANGED',
-            status: statusReply.status,
-          })
-          .catch(() => undefined);
+            status,
+          }),
+        )
+        .catch(() => undefined);
       return {
         ...base,
         type: 'ACK',

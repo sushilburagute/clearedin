@@ -20,11 +20,10 @@ export function OptionsApp() {
   );
   return (
     <>
-      <div className="ci-app ci-options">
+      <div className="ci-app ci-mode-switch">
         <Button
           className="ci-secondary"
           onClick={() => {
-            controller.dispose();
             if (demo)
               setController(
                 createOptionsController(

@@ -1,5 +1,6 @@
 import {
   ClassificationResultSchema,
+  matchesProviderConfiguration,
   DiagnosticEventSchema,
   ExtractionCompletenessSchema,
   ModelIdSchema,
@@ -115,11 +116,7 @@ export function createClassificationCache({
       if (
         serialized === null ||
         !parsed.success ||
-        parsed.data.provider !== key.provider ||
-        parsed.data.model !== key.model ||
-        parsed.data.adapterVersion !== key.adapterVersion ||
-        parsed.data.taxonomyVersion !== key.taxonomyVersion ||
-        parsed.data.promptVersion !== key.promptVersion
+        !matchesProviderConfiguration(parsed.data, key)
       ) {
         // Never include rejected payloads in exceptions or diagnostics.
         throw new TypeError('Invalid classification cache entry.');

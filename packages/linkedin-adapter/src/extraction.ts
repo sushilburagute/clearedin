@@ -53,10 +53,18 @@ function visible(element: Element, boundary: Element): boolean {
       return false;
     const style =
       current.ownerDocument.defaultView?.getComputedStyle?.(current);
-    if (style?.display === 'none' || style?.visibility === 'hidden')
+    if (
+      style?.display === 'none' ||
+      style?.visibility === 'hidden' ||
+      style?.visibility === 'collapse'
+    )
       return false;
     const inline = (current as HTMLElement).style;
-    if (inline?.display === 'none' || inline?.visibility === 'hidden')
+    if (
+      inline?.display === 'none' ||
+      inline?.visibility === 'hidden' ||
+      inline?.visibility === 'collapse'
+    )
       return false;
     current = current.parentElement;
   }
@@ -80,10 +88,13 @@ function readText(region: Element, post: Element): string | null {
     }
     if (node.nodeType !== 1) continue;
     const element = node as Element;
-    if (
-      (element !== region && element.matches(SELECTORS.excluded)) ||
-      !belongsTo(element, post) ||
-      !visible(element, post)
+    // The region was selected within this post. A pruned ancestor's children
+    // never enter the stack, so descendant visibility only needs a local check.
+    if (element === region) {
+      if (!visible(region, post)) continue;
+    } else if (
+      element.matches(`${SELECTORS.post}, ${SELECTORS.excluded}`) ||
+      !visible(element, element.parentElement!)
     )
       continue;
     if (element.tagName === 'BR') parts.push('\n');
@@ -105,6 +116,18 @@ function ownedMatches(post: Element, selector: string): Element[] {
   return Array.from(post.querySelectorAll(selector)).filter((node) =>
     belongsTo(node, post),
   );
+}
+
+function isSponsoredDisclosure(marker: Element): boolean {
+  if (!/^(Sponsored|Promoted)$/.test(marker.textContent?.trim() ?? ''))
+    return false;
+  const textNodes = marker.ownerDocument.createTreeWalker(marker, 4);
+  let node;
+  while ((node = textNodes.nextNode())) {
+    if (node.textContent?.trim() && !visible(node.parentElement!, marker))
+      return false;
+  }
+  return true;
 }
 
 export function extractPostContent(post: Element): ExtractedContent | null {
@@ -150,10 +173,11 @@ export function extractPostContent(post: Element): ExtractedContent | null {
       .some(
         (node) =>
           visible(node, post) &&
-          (node.matches('.feed-shared-inline-show-more-text--collapsed') ||
-            node.matches(
-              'button, .feed-shared-inline-show-more-text__see-more-less-toggle',
-            )),
+          (node.matches(
+            '.feed-shared-inline-show-more-text--collapsed, .feed-shared-inline-show-more-text__see-more-less-toggle',
+          ) ||
+            (node.matches('button') &&
+              !node.matches('[aria-haspopup="menu"], [aria-haspopup="true"]'))),
       )
   )
     complete = false;
@@ -166,8 +190,7 @@ export function extractPostContent(post: Element): ExtractedContent | null {
       visible(node, post),
   );
   const localSponsored =
-    markers.length === 1 &&
-    /^(Sponsored|Promoted)$/.test(markers[0]?.textContent?.trim() ?? '');
+    markers.length === 1 && isSponsoredDisclosure(markers[0]!);
   const text = full.slice(0, MAX_POST_CHARACTERS);
   const extraction = complete ? 'complete' : 'partial';
   const repostContext = quote ? 'visible_quote' : 'none';

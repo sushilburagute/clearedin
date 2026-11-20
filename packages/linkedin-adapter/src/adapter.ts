@@ -76,12 +76,14 @@ export function createLinkedInAdapter(
   let observation = 0;
   let route = '';
   let healthy = false;
+  let suspended = false;
   let cancelBatch: (() => void) | null = null;
   let cancelPoll: (() => void) | null = null;
   let releaseListeners = () => {};
   let liveRegion: HTMLElement | null = null;
   const focusTimers = new Set<() => void>();
   const states = new Map<Element, State>();
+  const placeholderPosts = new WeakMap<Element, Element>();
   let reveals = new WeakMap<Element, string>();
   const candidates = new Set<Element>();
   const visibleCandidates = new Set<Element>();
@@ -115,8 +117,13 @@ export function createLinkedInAdapter(
   }
   function restore(state: State) {
     state.pending = null;
-    state.rendered?.restore();
+    if (!state.rendered) return;
+    const { placeholder } = state.rendered;
+    intersection?.unobserve(placeholder);
+    placeholderPosts.delete(placeholder);
+    state.rendered.restore();
     state.rendered = null;
+    if (candidates.has(state.node)) intersection?.observe(state.node);
   }
   function withdraw(state: State) {
     if (state.emitted && state.identity)
@@ -295,6 +302,10 @@ export function createLinkedInAdapter(
     void digest(content.digestInput)
       .then((contentDigest) => {
         if (!validRoute() || states.get(node) !== state) return;
+        if (!canRead(node)) {
+          remove(state);
+          return;
+        }
         const identity = PostIdentitySchema.safeParse({
           postId: state.postId,
           contentDigest,
@@ -351,19 +362,24 @@ export function createLinkedInAdapter(
     walker = null;
   }
   function requestBatch() {
-    if (!cancelBatch && root) cancelBatch = schedule(batch, 32);
+    if (!suspended && !cancelBatch && root) cancelBatch = schedule(batch, 32);
+  }
+  function pruneCandidates() {
+    for (const node of candidates)
+      if (!canRead(node)) {
+        const state = states.get(node);
+        if (state) remove(state);
+        else {
+          intersection?.unobserve(node);
+          candidates.delete(node);
+          visibleCandidates.delete(node);
+        }
+      }
   }
   function batch() {
     cancelBatch = null;
-    if (!validRoute()) return;
-    for (const state of states.values())
-      if (!canRead(state.node)) remove(state);
-    for (const node of candidates)
-      if (!canRead(node)) {
-        intersection?.unobserve(node);
-        candidates.delete(node);
-        visibleCandidates.delete(node);
-      }
+    if (suspended || !validRoute()) return;
+    pruneCandidates();
     let scanned = 0;
     while (scanned++ < SCAN_BATCH && (walker || scanRoots.length)) {
       if (!walker) {
@@ -452,8 +468,7 @@ export function createLinkedInAdapter(
       restore(state);
       return;
     }
-    if (!state.visible || !state.emitted || state.revealed || state.rendered)
-      return;
+    if (!state.visible || !state.emitted || state.revealed) return;
     if (
       decision.reason !== 'category_hidden' ||
       !decision.matchedCategories.length
@@ -463,6 +478,10 @@ export function createLinkedInAdapter(
       state.content.localSponsored &&
       decision.matchedCategories.every((id) => id === 'sponsored');
     if (state.content.extraction === 'partial' && !localOnly) return;
+    if (state.rendered) {
+      state.rendered.updateCategories(decision.matchedCategories);
+      return;
+    }
     if (
       state.node.hasAttribute('hidden') ||
       state.node.hasAttribute('inert') ||
@@ -477,6 +496,11 @@ export function createLinkedInAdapter(
     state.rendered = collapsePost(state.node, decision.matchedCategories, () =>
       reveal(identity),
     );
+    // display:none removes the host from intersection. Its replacement now
+    // determines whether this post still has a visible subscriber.
+    intersection?.unobserve(state.node);
+    placeholderPosts.set(state.rendered.placeholder, state.node);
+    intersection?.observe(state.rendered.placeholder);
   }
 
   return {
@@ -484,7 +508,11 @@ export function createLinkedInAdapter(
     supportsRoute: supportsFeedRoute,
     extract: extractPostContent,
     discover() {
-      if (validRoute() && root) addScan(root);
+      if (validRoute() && root) {
+        suspended = false;
+        if (liveRegion && !liveRegion.isConnected) root.append(liveRegion);
+        addScan(root);
+      }
     },
     routeChanged() {
       validRoute();
@@ -493,6 +521,7 @@ export function createLinkedInAdapter(
       stop();
       const currentObservation = ++observation;
       root = nextRoot;
+      suspended = false;
       callbacks = nextCallbacks;
       route = url().href;
       const realm = root.ownerDocument.defaultView;
@@ -525,7 +554,7 @@ export function createLinkedInAdapter(
         return () => {};
       }
       mutation = ports.mutation((records) => {
-        if (!validRoute()) return;
+        if (suspended || !validRoute()) return;
         if (records.length > MAX_PENDING) {
           overflow();
           return;
@@ -567,19 +596,22 @@ export function createLinkedInAdapter(
       const height = Math.max(1, realm?.innerHeight ?? 800);
       intersection = ports.intersection(
         (entries) => {
-          if (!validRoute()) return;
+          if (suspended || !validRoute()) return;
           if (entries.length > MAX_TRACKED) {
             overflow();
             return;
           }
           for (const entry of entries) {
-            if (!candidates.has(entry.target)) continue;
-            if (entry.isIntersecting) visibleCandidates.add(entry.target);
-            else visibleCandidates.delete(entry.target);
-            const state = states.get(entry.target);
+            const node = placeholderPosts.get(entry.target) ?? entry.target;
+            if (!candidates.has(node)) continue;
+            const state = states.get(node);
+            if ((state?.rendered?.placeholder ?? node) !== entry.target)
+              continue;
+            if (entry.isIntersecting) visibleCandidates.add(node);
+            else visibleCandidates.delete(node);
             if (state) state.visible = entry.isIntersecting;
             if (entry.isIntersecting) {
-              const current = refresh(entry.target);
+              const current = refresh(node);
               if (current) emit(current);
             } else if (state) withdraw(state);
           }
@@ -619,14 +651,7 @@ export function createLinkedInAdapter(
       };
       const poll = () => {
         if (!validRoute()) return;
-        for (const state of states.values())
-          if (!canRead(state.node)) remove(state);
-        for (const node of candidates)
-          if (!canRead(node)) {
-            intersection?.unobserve(node);
-            candidates.delete(node);
-            visibleCandidates.delete(node);
-          }
+        if (!suspended) pruneCandidates();
         cancelPoll = schedule(poll, 500);
       };
       cancelPoll = schedule(poll, 500);
@@ -651,6 +676,16 @@ export function createLinkedInAdapter(
     },
     restoreAll() {
       // Retire identities as well as restoring: late pre-pause results cannot re-hide.
+      suspended = true;
+      cancelBatch?.();
+      cancelBatch = null;
+      pending.clear();
+      scanRoots.length = 0;
+      walker = null;
+      if (liveRegion) {
+        liveRegion.remove();
+        liveRegion.textContent = '';
+      }
       for (const state of states.values()) remove(state);
       for (const node of candidates) intersection?.unobserve(node);
       candidates.clear();

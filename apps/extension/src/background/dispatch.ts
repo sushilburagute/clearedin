@@ -1,5 +1,6 @@
 import {
   ClassificationResultSchema,
+  matchesProviderConfiguration,
   type ClassificationCacheKey,
   type ClassificationInput,
   type ClassifierAdapter,
@@ -81,11 +82,7 @@ export async function dispatchReserved(input: {
   await current();
   if (
     result.requestId !== classification.requestId ||
-    result.provider !== configuration.provider ||
-    result.model !== configuration.model ||
-    result.adapterVersion !== configuration.adapterVersion ||
-    result.taxonomyVersion !== configuration.taxonomyVersion ||
-    result.promptVersion !== configuration.promptVersion
+    !matchesProviderConfiguration(result, configuration)
   )
     throw new Error('invalid_response');
   await storage.usage.reconcile(

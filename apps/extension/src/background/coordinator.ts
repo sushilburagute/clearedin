@@ -1,6 +1,7 @@
 import {
   ExtractedPostSchema,
   ClassificationResultSchema,
+  matchesProviderConfiguration,
   type ClassificationInput,
   type ClassificationResult,
   type Clock,
@@ -124,7 +125,7 @@ export function createClassificationCoordinator(input: {
           // A pause/withdrawal can happen while durable accounting is being written.
           await check(generation, captured, signal);
           try {
-            const answer = ClassificationResultSchema.parse(
+            const parsed = ClassificationResultSchema.safeParse(
               await input.classify(
                 {
                   requestId: attemptId,
@@ -136,8 +137,13 @@ export function createClassificationCoordinator(input: {
                 signal,
               ),
             );
-            if (answer.requestId !== attemptId)
+            if (
+              !parsed.success ||
+              parsed.data.requestId !== attemptId ||
+              !matchesProviderConfiguration(parsed.data, input.configuration)
+            )
               throw new Error('invalid_response');
+            const answer = parsed.data;
             await check(generation, captured, signal);
             await input.storage.usage.reconcile(
               attemptId,

@@ -80,48 +80,52 @@ export function evaluate(rows, categories) {
   };
 }
 
+export const metadataFields = [
+  'provider',
+  'model',
+  'promptVersion',
+  'taxonomyVersion',
+  'thresholdVersion',
+  'sourceCommit',
+  'runDate',
+  'browser',
+  'hardware',
+];
+
 export function validateEvaluation(data, categories) {
   const issues = [];
   if (data?.schemaVersion !== 1 || !Array.isArray(data.rows))
-    throw new Error('Expected versioned evaluation input with rows');
-  for (const field of [
-    'provider',
-    'model',
-    'promptVersion',
-    'taxonomyVersion',
-    'thresholdVersion',
-    'sourceCommit',
-    'runDate',
-    'browser',
-    'hardware',
-  ])
+    return ['Expected versioned evaluation input with rows'];
+  for (const field of metadataFields)
     if (typeof data[field] !== 'string' || !data[field].trim())
       issues.push(`Missing metadata: ${field}`);
   if (
     !Array.isArray(data.annotators) ||
     data.annotators.length !== 2 ||
-    new Set(data.annotators).size !== 2 ||
-    data.annotators.some((value) => typeof value !== 'string' || !value.trim())
+    data.annotators.some(
+      (value) => typeof value !== 'string' || !value.trim(),
+    ) ||
+    new Set(data.annotators.map((value) => value.trim())).size !== 2
   )
     issues.push('Two distinct independent annotator identifiers are required');
   const ids = new Set();
   const groups = new Map();
   for (const row of data.rows) {
-    if (!row || typeof row !== 'object')
-      throw new Error('Invalid evaluation row');
-    if (typeof row.id !== 'string' || !row.id || ids.has(row.id))
-      issues.push('Missing or duplicate example ID');
-    ids.add(row.id);
-    if (
-      !['development', 'test'].includes(row.split) ||
-      typeof row.templateGroup !== 'string' ||
-      !row.templateGroup
-    )
+    if (!row || typeof row !== 'object' || Array.isArray(row)) {
+      issues.push('Invalid evaluation row');
+      continue;
+    }
+    const id = typeof row.id === 'string' ? row.id.trim() : '';
+    if (!id || ids.has(id)) issues.push('Missing or duplicate example ID');
+    ids.add(id);
+    const group =
+      typeof row.templateGroup === 'string' ? row.templateGroup.trim() : '';
+    if (!['development', 'test'].includes(row.split) || !group)
       issues.push('Each row requires a split and template/source group');
-    const split = groups.get(row.templateGroup);
+    const split = groups.get(group);
     if (split && split !== row.split)
-      issues.push(`Template/source leakage: ${row.templateGroup}`);
-    groups.set(row.templateGroup, row.split);
+      issues.push(`Template/source leakage: ${group}`);
+    groups.set(group, row.split);
     if (typeof row.adjudicated !== 'boolean' || !row.adjudicated)
       issues.push('Unadjudicated example');
     for (const field of ['labels', 'predictions'])
@@ -150,6 +154,8 @@ export function validateEvaluation(data, categories) {
 
 export function qualityGates(data, report, categories) {
   const failures = [];
+  if (!data.rows.some((row) => row.split === 'development'))
+    failures.push('A separate development split is required for calibration');
   if (data.rows.length < 500 || report.samples < 200)
     failures.push('Need at least 500 total examples and 200 held-out examples');
   if (report.hidePrecision.value === null || report.hidePrecision.value < 0.95)

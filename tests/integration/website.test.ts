@@ -11,7 +11,32 @@ describe('built website synthetic demo', () => {
       .spyOn(globalThis, 'fetch')
       .mockRejectedValue(new Error('network forbidden'));
     try {
-      await mountDemo(document);
+      const pause = document.querySelector<HTMLButtonElement>('#pause')!;
+      const reset = document.querySelector<HTMLButtonElement>('#reset')!;
+      const rules = [
+        ...document.querySelectorAll<HTMLSelectElement>('[data-category]'),
+      ];
+      expect(
+        [pause, reset, ...rules].every((control) => control.disabled),
+      ).toBe(true);
+      // Moving a sample must preserve its own classification and rule text.
+      const sponsored =
+        document.querySelector<HTMLElement>('[data-sponsored]')!;
+      sponsored.parentElement!.insertBefore(
+        sponsored,
+        document.querySelector('[data-fixture]'),
+      );
+      mountDemo(document);
+      expect(
+        [pause, reset, ...rules].every((control) => !control.disabled),
+      ).toBe(true);
+      expect(sponsored.querySelector('[data-reason]')!.textContent).toContain(
+        'Sponsored posts',
+      );
+      expect(
+        document.querySelector('[data-fixture="ambiguous"] [data-reason]')!
+          .textContent,
+      ).toContain('ambiguous');
       function select(category: string, value: string) {
         const node = document.querySelector<HTMLSelectElement>(
           `[data-category="${category}"]`,
@@ -23,8 +48,34 @@ describe('built website synthetic demo', () => {
           .setAttribute('selected', '');
         node.dispatchEvent(new window.Event('change'));
       }
+      for (const rule of rules) {
+        const category = rule.dataset.category!;
+        select(category, 'hide');
+        const affected = document.querySelectorAll<HTMLElement>(
+          '[data-body][hidden]',
+        );
+        expect(
+          affected.length,
+          `A sample should demonstrate ${category}`,
+        ).toBeGreaterThan(0);
+        expect(document.querySelector('#feed-jump')!.getAttribute('href')).toBe(
+          `#${affected[0]!.parentElement!.id}`,
+        );
+        select(category, 'always_show');
+        for (const body of affected) {
+          expect(body.hidden).toBe(false);
+          expect(
+            body.parentElement!.querySelector('[data-reason]')!.textContent,
+          ).toContain('Always show');
+        }
+        select(category, 'show');
+      }
       const bait = document.querySelector('[data-fixture="engagement-bait"]')!;
       const body = bait.querySelector<HTMLElement>('[data-body]')!;
+      select('sponsored', 'hide');
+      expect(sponsored.querySelector<HTMLElement>('[data-body]')!.hidden).toBe(
+        true,
+      );
       select('engagement_bait', 'hide');
       expect(body.hidden).toBe(true);
       bait.querySelector<HTMLButtonElement>('button')!.click();
@@ -37,15 +88,22 @@ describe('built website synthetic demo', () => {
       select('technical_content', 'always_show');
       expect(launch.hidden).toBe(false);
       select('motivational_story', 'hide');
-      document.querySelector<HTMLButtonElement>('#pause')!.click();
+      pause.click();
+      expect(pause.textContent).toBe('Resume demo');
       expect(
         [...document.querySelectorAll<HTMLElement>('[data-body]')].every(
           (node) => !node.hidden,
         ),
       ).toBe(true);
-      document.querySelector<HTMLButtonElement>('#reset')!.click();
+      pause.click();
+      expect(sponsored.querySelector<HTMLElement>('[data-body]')!.hidden).toBe(
+        true,
+      );
+      reset.click();
+      expect(rules.every((rule) => rule.value === 'show')).toBe(true);
+      expect(pause.textContent).toBe('Pause demo');
       expect(document.querySelector('#demo-status')!.textContent).toContain(
-        '0 of 11',
+        '0 of 14',
       );
       expect(network).not.toHaveBeenCalled();
     } finally {

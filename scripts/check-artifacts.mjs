@@ -76,6 +76,14 @@ for (const browser of ['chrome', 'firefox']) {
   assert.deepEqual(manifest.optional_host_permissions ?? [], []);
   assert.equal(manifest.externally_connectable, undefined);
   assert.equal(manifest.options_ui.open_in_tab, true);
+  for (const size of [16, 32, 48, 128]) {
+    const icon = `icon/${size}.png`;
+    assert.equal(manifest.icons?.[size], icon);
+    if (size <= 32) assert.equal(manifest.action.default_icon[size], icon);
+    const png = await readFile(resolve(root, icon));
+    assert.equal(png.readUInt32BE(16), size);
+    assert.equal(png.readUInt32BE(20), size);
+  }
   assert.equal(manifest.update_url, undefined);
   assert.equal(
     manifest.content_security_policy.extension_pages,

@@ -1,5 +1,6 @@
 import {
   ClassificationResultSchema,
+  matchesProviderConfiguration,
   ErrorCodeSchema,
   type ClassificationCacheKey,
   type ClassificationResult,
@@ -97,13 +98,7 @@ export function createScheduler(input: {
         .then((raw) => {
           if (job.done) return;
           const result = ClassificationResultSchema.parse(raw);
-          if (
-            result.provider !== job.key.provider ||
-            result.model !== job.key.model ||
-            result.adapterVersion !== job.key.adapterVersion ||
-            result.taxonomyVersion !== job.key.taxonomyVersion ||
-            result.promptVersion !== job.key.promptVersion
-          )
+          if (!matchesProviderConfiguration(result, job.key))
             throw new Error('invalid_response');
           finish(job, result, null);
         })

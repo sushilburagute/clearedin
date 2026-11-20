@@ -26,7 +26,7 @@ jobs:
       - run: pnpm test:integration
       - run: pnpm site:check
       - run: pnpm docs:check
-      - run: pnpm build
+      # Integration builds the site, and each packaging command builds its browser target.
       - run: pnpm package:chrome
       - run: pnpm package:firefox
       - run: pnpm artifacts:check

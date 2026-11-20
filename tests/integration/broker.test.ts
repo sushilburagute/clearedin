@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   createDefaultSettings,
   type MessageSender,
 } from '@clearedin/contracts';
 import { createStorageBrowserFixture } from '@clearedin/test-fixtures/storage';
+import { SETTINGS_KEY, USAGE_KEY } from '@clearedin/storage';
 import { createBroker } from '../../apps/extension/src/background/broker';
 import { createMessageClient } from '../../apps/extension/src/messaging/client';
 
@@ -141,6 +142,71 @@ describe('production settings broker (injected browser ports)', () => {
       ),
     ).toEqual([1, 2, 3, 4, 5]);
     expect(fixture.snapshot().broadcasts).toHaveLength(10);
+  });
+
+  it('reports incompatible settings and preserves their generation on explicit reset', async () => {
+    const { broker, fixture } = setup();
+    await fixture.ports.localStorage.set(SETTINGS_KEY, {
+      schemaVersion: 2,
+      enablementGeneration: 7,
+    });
+    expect(
+      await broker.handle(request('GET_PUBLIC_STATUS'), options),
+    ).toMatchObject({
+      type: 'PUBLIC_STATUS',
+      status: { error: { code: 'unsupported_schema' }, enabled: false },
+    });
+    expect(await broker.handle(request('CLEAR_DATA'), options)).toMatchObject({
+      type: 'ACK',
+      enablementGeneration: 8,
+    });
+  });
+
+  it('recovers from a corrupt ledger and malformed generation via the options command', async () => {
+    const { broker, fixture } = setup();
+    await fixture.ports.localStorage.set(USAGE_KEY, { schemaVersion: 2 });
+    expect(
+      await broker.handle(request('GET_PUBLIC_STATUS'), options),
+    ).toMatchObject({
+      type: 'ERROR',
+      error: { code: 'unsupported_schema' },
+    });
+    await fixture.ports.localStorage.set(SETTINGS_KEY, {
+      enablementGeneration: 'damaged',
+    });
+    expect(await broker.handle(request('CLEAR_DATA'), options)).toMatchObject({
+      type: 'ACK',
+      enablementGeneration: 1,
+    });
+    expect(await broker.handle(request('GET_SETTINGS'), options)).toMatchObject(
+      {
+        type: 'SETTINGS',
+        settings: createDefaultSettings(),
+      },
+    );
+    expect(
+      await broker.handle(request('GET_PUBLIC_STATUS'), options),
+    ).toMatchObject({
+      type: 'PUBLIC_STATUS',
+      status: { dailyRequestsUsed: 0, enabled: false },
+    });
+  });
+
+  it('can clear data in the same worker after a transient storage failure', async () => {
+    const { broker, fixture } = setup();
+    vi.spyOn(fixture.ports.localStorage, 'set').mockRejectedValueOnce(
+      new Error('write failed'),
+    );
+    expect(
+      await broker.handle(request('GET_PUBLIC_STATUS'), options),
+    ).toMatchObject({
+      type: 'ERROR',
+      error: { code: 'storage_unavailable' },
+    });
+    expect(await broker.handle(request('CLEAR_DATA'), options)).toMatchObject({
+      type: 'ACK',
+      enablementGeneration: 1,
+    });
   });
 
   it('rejects schema extras instead of accepting payload sender claims', async () => {

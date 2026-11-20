@@ -75,6 +75,7 @@ export interface UiSnapshot {
   test: 'idle' | 'pending' | 'passed' | 'failed';
   permission: boolean;
   diagnostics: DiagnosticExport | null;
+  dataRevision: number;
 }
 
 function initial(): UiSnapshot {
@@ -88,6 +89,7 @@ function initial(): UiSnapshot {
     test: 'idle',
     permission: false,
     diagnostics: null,
+    dataRevision: 0,
   };
 }
 
@@ -150,6 +152,7 @@ export function createOptionsController(
       (provider) => provider.id === state.settings?.provider,
     );
   async function reload() {
+    refreshAfterOperation = false;
     const current = ++version;
     const settingsReply = await send(client, {
       ...envelope(),
@@ -179,7 +182,7 @@ export function createOptionsController(
       });
   }
   async function run(action: () => Promise<void>, notice: string) {
-    if (state.busy || disposed) return;
+    if (state.busy || disposed) return false;
     publish({ busy: true, error: null, notice: '' });
     try {
       await action();
@@ -187,16 +190,16 @@ export function createOptionsController(
     } catch (error) {
       publish({ error: safeError(error) });
     } finally {
-      if (refreshAfterOperation && !disposed) {
-        refreshAfterOperation = false;
+      while (refreshAfterOperation && !disposed) {
         try {
           await reload();
         } catch (error) {
-          publish({ error: safeError(error) });
+          publish({ error: safeError(error), notice: '' });
         }
       }
       publish({ busy: false, loading: false });
     }
+    return !disposed && state.error === null;
   }
   const mutation = async (request: OptionsRequest) => {
     await send(client, request);
@@ -246,6 +249,8 @@ export function createOptionsController(
             )
               return;
           } else {
+            if (message.reason === 'data_cleared')
+              publish({ dataRevision: message.enablementGeneration });
             invalidateTest = [
               'provider_changed',
               'data_cleared',
@@ -448,10 +453,12 @@ export function createOptionsController(
     },
     clearData() {
       publish({ test: 'idle', diagnostics: null });
-      return run(
-        () => mutation({ ...envelope(), type: 'CLEAR_DATA' }),
-        'Local extension data cleared. Filtering is disabled.',
-      );
+      return run(async () => {
+        const reply = await send(client, { ...envelope(), type: 'CLEAR_DATA' });
+        if (reply.type === 'ACK')
+          publish({ dataRevision: reply.enablementGeneration });
+        await reload();
+      }, 'Local extension data cleared. Filtering is disabled.');
     },
     previewDiagnostics() {
       return run(async () => {
@@ -512,7 +519,7 @@ export function createPopupController(client: PopupClient) {
   }
   async function run(action: () => Promise<void>) {
     if (state.busy || disposed) return;
-    publish({ busy: true, error: null });
+    publish({ busy: true, error: null, notice: '' });
     try {
       await action();
     } catch (error) {
@@ -544,6 +551,9 @@ export function createPopupController(client: PopupClient) {
         }
       });
       await run(getStatus);
+    },
+    refresh() {
+      return run(getStatus);
     },
     setEnabled(enabled: boolean) {
       return run(async () => {
@@ -581,6 +591,19 @@ export function createPopupController(client: PopupClient) {
   };
 }
 export type PopupController = ReturnType<typeof createPopupController>;
+
+export function statusHeading(status: PublicStatus): string {
+  switch (status.state) {
+    case 'needs_setup':
+      return 'Setup needed';
+    case 'limited':
+      return 'Usage limit reached';
+    case 'unavailable':
+      return 'Filtering unavailable';
+    default:
+      return status.enabled ? 'Filtering is active' : 'Filtering is paused';
+  }
+}
 
 export function statusCopy(status: PublicStatus): string {
   if (status.error) return ERROR_COPY[status.error.code];

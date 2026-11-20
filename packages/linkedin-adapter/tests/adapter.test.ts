@@ -237,6 +237,8 @@ describe('feed extraction', () => {
     expect(extractPostContent(h.post)?.localSponsored).toBe(false);
     marker.removeAttribute('hidden');
     expect(extractPostContent(h.post)?.localSponsored).toBe(true);
+    marker.innerHTML = '<span hidden>Promoted</span>';
+    expect(extractPostContent(h.post)?.localSponsored).toBe(false);
     h.stop();
   });
   it('recognizes truncation controls even when the visible text has no ellipsis', () => {
@@ -246,6 +248,10 @@ describe('feed extraction', () => {
       '<button aria-expanded="false">See more</button>',
     );
     expect(extractPostContent(h.post)?.extraction).toBe('partial');
+    const button = h.post.querySelector('[aria-expanded]')!;
+    button.textContent = 'Post options';
+    button.setAttribute('aria-haspopup', 'menu');
+    expect(extractPostContent(h.post)?.extraction).toBe('complete');
     h.stop();
   });
   it('rejects oversized post trees before selector traversal and extraction', () => {
@@ -281,6 +287,55 @@ describe('lifecycle, identity and reversible rendering', () => {
     h.post.style.visibility = 'hidden';
     await h.flush();
     h.intersect();
+    await h.flush();
+    expect(h.posts).toHaveLength(0);
+    h.stop();
+  });
+  it('tracks the visible placeholder after collapse and ignores late host intersections', async () => {
+    const h = harness();
+    const id = await h.start();
+    h.adapter.apply(id, hide);
+    const placeholder = h.root.querySelector<HTMLElement>(
+      '[data-clearedin-owned="placeholder"]',
+    )!;
+    expect(h.observe).toHaveBeenCalledWith(placeholder);
+    h.intersect(h.post, false);
+    expect(h.removed).toHaveLength(0);
+    h.intersect(placeholder, false);
+    expect(h.removed).toEqual([id]);
+    h.intersect(placeholder);
+    expect(h.posts).toHaveLength(2);
+    h.adapter.restore(id);
+    expect(h.unobserve).toHaveBeenCalledWith(placeholder);
+    expect(h.observe).toHaveBeenLastCalledWith(h.post);
+    h.stop();
+  });
+  it('discards pending discovery and ignores mutations while paused', async () => {
+    const h = harness();
+    h.adapter.restoreAll();
+    h.mutate(h.root, 'childList', [h.post]);
+    await h.flush();
+    h.intersect();
+    await h.flush();
+    expect(h.observe).not.toHaveBeenCalled();
+    expect(h.posts).toHaveLength(0);
+    h.adapter.discover();
+    await h.start();
+    expect(h.posts).toHaveLength(1);
+    h.stop();
+  });
+  it('rechecks native visibility before publishing an asynchronous digest', async () => {
+    let finish!: (hash: string) => void;
+    const h = harness(SYNTHETIC_FEED_HTML, {
+      digest: () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    });
+    await h.flush();
+    h.intersect();
+    h.root.hidden = true;
+    finish('a'.repeat(64));
     await h.flush();
     expect(h.posts).toHaveLength(0);
     h.stop();

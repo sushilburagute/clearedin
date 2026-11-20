@@ -94,6 +94,19 @@ export interface ProviderConfiguration {
   taxonomyVersion: string;
 }
 
+export function matchesProviderConfiguration(
+  result: ProviderConfiguration,
+  expected: ProviderConfiguration,
+): boolean {
+  return (
+    result.provider === expected.provider &&
+    result.model === expected.model &&
+    result.adapterVersion === expected.adapterVersion &&
+    result.promptVersion === expected.promptVersion &&
+    result.taxonomyVersion === expected.taxonomyVersion
+  );
+}
+
 export interface ThresholdPair {
   hide: number;
   protect: number;

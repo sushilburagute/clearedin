@@ -150,6 +150,93 @@ describe('rendered extension surfaces (synthetic DOM)', () => {
     );
   });
 
+  it('keeps edited rules through refresh, merges untouched rules, and clears drafts on reset', async () => {
+    const session = createDemoSession();
+    const controller = createOptionsController(
+      session.client,
+      session.environment,
+    );
+    await act(async () =>
+      root.render(createElement(OptionsSurface, { controller })),
+    );
+    const saveLabel = 'Save rules and limits';
+    expect(button(saveLabel).disabled).toBe(true);
+    const select = document.querySelector<HTMLSelectElement>(
+      '.ci-category select',
+    )!;
+    Object.defineProperty(select, 'value', {
+      configurable: true,
+      value: 'hide',
+    });
+    const edit = () =>
+      act(async () =>
+        select.dispatchEvent(new window.Event('change', { bubbles: true })),
+      );
+    await edit();
+    await act(async () => controller.refresh());
+    expect(button(saveLabel).disabled).toBe(false);
+    const settings = controller.getSnapshot().settings!;
+    await session.client.send({
+      protocolVersion: 1,
+      requestId: 'another-tab',
+      type: 'SET_PREFERENCES',
+      preferences: {
+        categoryModes: settings.categoryModes,
+        dailyRequestLimit: 42,
+        estimatedCostCap: null,
+        languages: ['en'],
+      },
+    });
+    await act(async () => controller.refresh());
+    await act(async () =>
+      select
+        .closest('form')!
+        .dispatchEvent(
+          new window.Event('submit', { bubbles: true, cancelable: true }),
+        ),
+    );
+    expect(controller.getSnapshot().settings?.dailyRequestLimit).toBe(42);
+    expect(
+      Object.values(controller.getSnapshot().settings!.categoryModes),
+    ).toContain('hide');
+    expect(button(saveLabel).disabled).toBe(true);
+    Object.defineProperty(select, 'value', {
+      configurable: true,
+      value: 'always_show',
+    });
+    await edit();
+    expect(button(saveLabel).disabled).toBe(false);
+    await act(async () => {
+      await controller.clearData();
+    });
+    expect(button(saveLabel).disabled).toBe(true);
+  });
+
+  it('lets the user retry loading settings and keeps data recovery reachable', async () => {
+    const session = createDemoSession();
+    const send = vi.spyOn(session.client, 'send');
+    send.mockRejectedValueOnce(new Error('Temporary transport failure'));
+    const controller = createOptionsController(
+      session.client,
+      session.environment,
+    );
+    await act(async () =>
+      root.render(createElement(OptionsSurface, { controller })),
+    );
+    expect(button('Clear all data').disabled).toBe(true);
+    expect(document.querySelector('.ci-category')).toBeNull();
+    await click('Reload settings');
+    expect(document.querySelectorAll('.ci-category')).toHaveLength(12);
+    expect(document.querySelector('[role="alert"]')).toBeNull();
+    for (const link of document.querySelectorAll<HTMLAnchorElement>(
+      '.ci-settings-nav a',
+    )) {
+      expect(
+        document.getElementById(link.getAttribute('href')!.slice(1)),
+      ).not.toBeNull();
+    }
+  });
+
   it('clears a masked credential before dispatch and never renders echoed transport errors', async () => {
     const session = createDemoSession();
     await session.client.send({
@@ -226,6 +313,22 @@ describe('rendered extension surfaces (synthetic DOM)', () => {
     expect(document.querySelector('input')).toBeNull();
     await click('Open settings');
     expect(openSettings).toHaveBeenCalledOnce();
+  });
+
+  it('recovers from a failed popup status read and identifies missing setup', async () => {
+    const session = createDemoSession();
+    vi.spyOn(session.client, 'send').mockRejectedValueOnce(
+      new Error('Temporary transport failure'),
+    );
+    const controller = createPopupController(session.client);
+    await act(async () =>
+      root.render(
+        createElement(PopupSurface, { controller, openSettings: vi.fn() }),
+      ),
+    );
+    await click('Reload status');
+    expect(document.querySelector('h2')?.textContent).toBe('Setup needed');
+    expect(document.querySelector('[role="alert"]')).toBeNull();
   });
 
   it('keeps provider and credential actions unavailable in the packaged default configuration', async () => {

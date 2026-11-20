@@ -1,12 +1,11 @@
 ---
+import { createElement } from 'react';
 import Site from '../layouts/Site.astro';
+import { MissingPage } from '../components/Guide';
 ---
 
 <Site
   title="Page not found"
-  description="Return to the ClearedIn development preview."
->
-  <h1>Page not found</h1>
-  <p>Use the navigation to return home or try the synthetic demo.</p>
-  <a href="/">Return home</a>
-</Site>
+  description="Return to the ClearedIn feed studio."
+  page={createElement(MissingPage)}
+/>

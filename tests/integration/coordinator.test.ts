@@ -139,6 +139,21 @@ describe('classification coordinator with synthetic inference', () => {
     ).rejects.toThrow('provider_unavailable');
     expect((await storage.usage.read()).attempts).toBe(1);
   });
+  it('rejects a mismatched classification before settling the reserved cost', async () => {
+    const { coordinator, storage, post, generation, classify } = await setup();
+    classify.mockImplementationOnce(async (request, signal) => ({
+      ...(await createSyntheticClassifier().classify(request, { signal })),
+      model: 'different-model',
+      usage: { estimatedCost: 0, currency: 'USD' },
+    }));
+    await expect(
+      coordinator.classify('tab', 'mismatch', post, generation),
+    ).rejects.toThrow('invalid_response');
+    expect(await storage.usage.read()).toMatchObject({
+      attempts: 1,
+      estimatedCost: null,
+    });
+  });
   it('hashes text independently instead of trusting local identity for cache hits', async () => {
     const { coordinator, storage, post, generation, classify } = await setup();
     const snapshot = await storage.settings.read();

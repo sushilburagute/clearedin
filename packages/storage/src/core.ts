@@ -176,15 +176,21 @@ export function nextGeneration(current: number): number {
 /** Explicit user reset may erase incompatible data; ordinary reads never do. */
 export async function checkResetGeneration(
   context: StorageContext,
-  expected: number,
-): Promise<void> {
-  if (!GenerationSchema.safeParse(expected).success)
+  expected?: number,
+): Promise<number> {
+  if (expected !== undefined && !GenerationSchema.safeParse(expected).success)
     throw new StorageError('invalid_request');
   const raw = await context.local.get(SETTINGS_KEY);
   const stored =
     raw && typeof raw === 'object' && 'enablementGeneration' in raw
       ? raw.enablementGeneration
       : 0;
-  if (!GenerationSchema.safeParse(stored).success || stored !== expected)
+  const generation = GenerationSchema.safeParse(stored);
+  if (
+    expected !== undefined &&
+    (!generation.success || generation.data !== expected)
+  )
     throw new StorageError('cancelled');
+  // An explicit, unconditional reset also repairs a malformed generation.
+  return generation.success ? generation.data : 0;
 }

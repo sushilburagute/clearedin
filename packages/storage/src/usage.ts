@@ -23,13 +23,22 @@ interface Ledger {
   entries: Entry[];
 }
 
+// A ledger uses one time zone for every entry. Keep only its formatter so a
+// large ledger does not allocate an Intl formatter per validated reservation.
+let calendar: { zone: string; formatter: Intl.DateTimeFormat } | undefined;
 function dayAt(timestamp: number, timeZone: string): string {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(timestamp);
+  if (calendar?.zone !== timeZone) {
+    calendar = {
+      zone: timeZone,
+      formatter: new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }),
+    };
+  }
+  const parts = calendar.formatter.formatToParts(timestamp);
   const part = (type: string) =>
     parts.find((entry) => entry.type === type)!.value;
   return `${part('year')}-${part('month')}-${part('day')}`;

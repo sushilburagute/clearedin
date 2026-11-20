@@ -327,6 +327,44 @@ describe('options controller using frozen transport', () => {
     expect(controller.getSnapshot().status?.enabled).toBe(true);
   });
 
+  it('reads settings once after the broker broadcasts before acknowledging a mutation', async () => {
+    const h = harness();
+    const client: OptionsClient = {
+      ...h.client,
+      async send(request) {
+        const reply = await h.client.send(request);
+        if (request.type === 'SET_PREFERENCES' && reply.type === 'ACK') {
+          for (const listener of h.listeners)
+            listener({
+              protocolVersion: 1,
+              requestId: request.requestId,
+              type: 'RESTORE_ALL',
+              reason: 'paused',
+              enablementGeneration: reply.enablementGeneration,
+            });
+        }
+        return reply;
+      },
+    };
+    const controller = createOptionsController(client, h.session.environment);
+    await controller.start();
+    h.requests.length = 0;
+    const { categoryModes, languages, estimatedCostCap } =
+      controller.getSnapshot().settings!;
+    await controller.setPreferences({
+      categoryModes,
+      languages,
+      estimatedCostCap,
+      dailyRequestLimit: 40,
+    });
+    expect(h.requests.map(({ type }) => type)).toEqual([
+      'SET_PREFERENCES',
+      'GET_SETTINGS',
+      'GET_PUBLIC_STATUS',
+    ]);
+    expect(controller.getSnapshot().settings?.dailyRequestLimit).toBe(40);
+  });
+
   it('rejects diagnostics with extra sensitive fields and clears preview on reset', async () => {
     const h = await setup();
     await h.controller.previewDiagnostics();

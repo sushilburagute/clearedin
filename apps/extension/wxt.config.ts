@@ -22,6 +22,7 @@ export default defineConfig({
     name: 'ClearedIn Development',
     description:
       'Development preview with local category settings and synthetic demos. Live filtering is unavailable.',
+    action: { default_icon: { 16: 'icon/16.png', 32: 'icon/32.png' } },
     permissions: ['storage'],
     ...(browser === 'firefox'
       ? {

@@ -10,11 +10,14 @@ import type {
   CategoryModes,
   Preferences,
   ProviderId,
+  Settings,
 } from '@clearedin/contracts';
 import { Button, CategoryControl, Notice } from './controls';
+import { PROVIDER_LABELS } from './catalog';
 import {
   resetCopy,
   statusCopy,
+  statusHeading,
   type OptionsController,
   type PopupController,
 } from './controller';
@@ -64,6 +67,7 @@ export function PopupSurface({
     return () => controller.dispose();
   }, [controller]);
   const status = state.status;
+  const reset = status && resetCopy(status);
   return (
     <Frame popup demo={mode === 'demo'}>
       {mode === 'unavailable' && (
@@ -74,16 +78,29 @@ export function PopupSurface({
         </Notice>
       )}
       {state.loading && <p role="status">Loading extension status…</p>}
-      {state.error && <Notice error>{state.error}</Notice>}
+      {state.error && (
+        <>
+          <Notice error>{state.error}</Notice>
+          <Button
+            className="ci-secondary"
+            disabled={state.busy}
+            onClick={() => void controller.refresh()}
+          >
+            Reload status
+          </Button>
+        </>
+      )}
       {status && (
         <>
-          <h2>{status.enabled ? 'Active' : 'Paused'}</h2>
+          <h2>{statusHeading(status)}</h2>
           <p>{statusCopy(status)}</p>
           <dl className="ci-stats">
             <div>
               <dt>Provider</dt>
               <dd>
-                {status.provider ?? 'Not selected'}
+                {status.provider
+                  ? PROVIDER_LABELS[status.provider]
+                  : 'Not selected'}
                 {status.model && ` / ${status.model}`}
               </dd>
             </div>
@@ -102,35 +119,42 @@ export function PopupSurface({
               </dd>
             </div>
           </dl>
-          {resetCopy(status) && <p className="ci-muted">{resetCopy(status)}</p>}
+          {reset && <p className="ci-muted">{reset}</p>}
           {status.error?.retryAfterMs !== undefined && (
             <p>
               Retry after {Math.ceil(status.error.retryAfterMs / 1000)} seconds.
             </p>
           )}
           {status.dailyRequestsUsed === 0 && !status.error && (
-            <p>No posts classified yet.</p>
+            <p>No classification requests today.</p>
           )}
-          <Button
-            disabled={
-              state.busy ||
-              (!status.enabled &&
-                (!status.credentialConfigured ||
-                  !status.consentGranted ||
-                  status.state === 'unavailable'))
-            }
-            onClick={() => void controller.setEnabled(!status.enabled)}
-          >
-            {state.busy
-              ? 'Updating…'
-              : status.enabled
-                ? 'Pause filtering'
-                : 'Resume filtering'}
-          </Button>
+          {(mode !== 'unavailable' || status.enabled) && (
+            <Button
+              disabled={
+                state.busy ||
+                (!status.enabled &&
+                  (!status.credentialConfigured ||
+                    !status.consentGranted ||
+                    status.state === 'unavailable'))
+              }
+              onClick={() => void controller.setEnabled(!status.enabled)}
+            >
+              {state.busy
+                ? 'Updating…'
+                : status.enabled
+                  ? 'Pause filtering'
+                  : 'Resume filtering'}
+            </Button>
+          )}
         </>
       )}
-      <p>Filtering runs on the LinkedIn home feed.</p>
-      <Button className="ci-secondary" onClick={openSettings}>
+      {mode !== 'unavailable' &&
+        status?.error?.code !== 'unsupported_route' &&
+        !status?.enabled && <p>Filtering runs on the LinkedIn home feed.</p>}
+      <Button
+        className={mode === 'unavailable' ? undefined : 'ci-secondary'}
+        onClick={openSettings}
+      >
         {status?.error?.code === 'invalid_credential'
           ? 'Update key in settings'
           : 'Open settings'}
@@ -142,33 +166,63 @@ export function PopupSurface({
   );
 }
 
-function PreferencesForm({ controller }: { controller: OptionsController }) {
-  const state = useSyncExternalStore(
-    controller.subscribe,
-    controller.getSnapshot,
-    controller.getSnapshot,
+function SetupSection({
+  id,
+  title,
+  collapsed,
+  children,
+}: {
+  id: string;
+  title: string;
+  collapsed: boolean;
+  children: ReactNode;
+}) {
+  const heading = <h2 id={id}>{title}</h2>;
+  return collapsed ? (
+    <details className="ci-setup-details">
+      <summary>{heading}</summary>
+      {children}
+    </details>
+  ) : (
+    <section aria-labelledby={id}>
+      {heading}
+      {children}
+    </section>
   );
-  const settings = state.settings;
-  const [modes, setModes] = useState<CategoryModes | null>(null);
-  const [limit, setLimit] = useState('200');
-  const [cap, setCap] = useState('');
-  const [currency, setCurrency] = useState('USD');
-  useEffect(() => {
-    if (settings) {
-      setModes(settings.categoryModes);
-      setLimit(String(settings.dailyRequestLimit));
-      setCap(
-        settings.estimatedCostCap
-          ? String(settings.estimatedCostCap.amount)
-          : '',
-      );
-      setCurrency(settings.estimatedCostCap?.currency ?? 'USD');
-    }
-  }, [settings]);
-  if (!settings || !modes) return null;
+}
+
+function PreferencesForm({
+  controller,
+  settings,
+  busy,
+}: {
+  controller: OptionsController;
+  settings: Settings;
+  busy: boolean;
+}) {
+  const [ruleEdits, setRuleEdits] = useState<Partial<CategoryModes>>({});
+  const [limitEdit, setLimit] = useState<string | null>(null);
+  const [capEdit, setCap] = useState<string | null>(null);
+  const [currencyEdit, setCurrency] = useState<string | null>(null);
+  const modes = { ...settings.categoryModes, ...ruleEdits };
+  const savedLimit = String(settings.dailyRequestLimit);
+  const savedCap = settings.estimatedCostCap
+    ? String(settings.estimatedCostCap.amount)
+    : '';
+  const savedCurrency = settings.estimatedCostCap?.currency ?? 'USD';
+  const limit = limitEdit ?? savedLimit;
+  const cap = capEdit ?? savedCap;
+  const currency = currencyEdit ?? savedCurrency;
+  const dirty =
+    CATEGORY_DEFINITIONS.some(
+      ({ id }) => modes[id] !== settings.categoryModes[id],
+    ) ||
+    limit !== savedLimit ||
+    cap !== savedCap ||
+    (cap !== '' && currency !== savedCurrency);
   return (
     <form
-      onSubmit={(event) => {
+      onSubmit={async (event) => {
         event.preventDefault();
         const preferences: Preferences = {
           categoryModes: modes,
@@ -177,7 +231,12 @@ function PreferencesForm({ controller }: { controller: OptionsController }) {
           estimatedCostCap:
             cap === '' ? null : { amount: Number(cap), currency },
         };
-        void controller.setPreferences(preferences);
+        if (await controller.setPreferences(preferences)) {
+          setRuleEdits({});
+          setLimit(null);
+          setCap(null);
+          setCurrency(null);
+        }
       }}
     >
       <section aria-labelledby="categories-title">
@@ -193,8 +252,16 @@ function PreferencesForm({ controller }: { controller: OptionsController }) {
             label={category.label}
             description={category.definition}
             value={modes[category.id]}
-            disabled={state.busy}
-            onChange={(mode) => setModes({ ...modes, [category.id]: mode })}
+            disabled={busy}
+            onChange={(mode) =>
+              setRuleEdits((edits) => {
+                const next = { ...edits };
+                if (mode === settings.categoryModes[category.id])
+                  delete next[category.id];
+                else next[category.id] = mode;
+                return next;
+              })
+            }
           />
         ))}
       </section>
@@ -214,8 +281,12 @@ function PreferencesForm({ controller }: { controller: OptionsController }) {
               max="100000"
               step="1"
               value={limit}
-              disabled={state.busy}
-              onChange={(event) => setLimit(event.target.value)}
+              disabled={busy}
+              onChange={(event) =>
+                setLimit(
+                  event.target.value === savedLimit ? null : event.target.value,
+                )
+              }
             />
           </label>
           <label>
@@ -225,8 +296,12 @@ function PreferencesForm({ controller }: { controller: OptionsController }) {
               min="0.000001"
               step="any"
               value={cap}
-              disabled={state.busy}
-              onChange={(event) => setCap(event.target.value)}
+              disabled={busy}
+              onChange={(event) =>
+                setCap(
+                  event.target.value === savedCap ? null : event.target.value,
+                )
+              }
             />
           </label>
           <label>
@@ -237,7 +312,7 @@ function PreferencesForm({ controller }: { controller: OptionsController }) {
               pattern="[A-Z]{3}"
               maxLength={3}
               value={currency}
-              disabled={state.busy}
+              disabled={busy || cap === ''}
               onChange={(event) =>
                 setCurrency(event.target.value.toUpperCase())
               }
@@ -249,9 +324,14 @@ function PreferencesForm({ controller }: { controller: OptionsController }) {
           A cost cap blocks requests when a conservative estimate is
           unavailable. English is the initial classification language.
         </p>
-        <Button type="submit" disabled={state.busy}>
-          Save rules and limits
-        </Button>
+        <div className="ci-actions">
+          <Button type="submit" disabled={busy || !dirty}>
+            Save rules and limits
+          </Button>
+          <span className="ci-muted">
+            {dirty ? 'Unsaved changes' : 'No unsaved changes'}
+          </span>
+        </div>
       </section>
     </form>
   );
@@ -268,6 +348,7 @@ export function OptionsSurface({
     controller.getSnapshot,
   );
   const environment = controller.environment;
+  const localOnly = environment.mode === 'unavailable';
   const [providerId, setProviderId] = useState<ProviderId>('typesafe');
   const [modelId, setModelId] = useState('');
   const [consentChecked, setConsentChecked] = useState(false);
@@ -276,21 +357,22 @@ export function OptionsSurface({
   const provider = environment.providers.find((item) => item.id === providerId);
   const configured =
     state.settings?.provider === providerId && state.settings.model === modelId;
+  const savedProvider = state.settings?.provider;
+  const savedModel = state.settings?.model;
   const canConfigure = provider?.available === true && modelId !== '';
   useEffect(() => {
     void controller.start();
     return () => controller.dispose();
   }, [controller]);
   useEffect(() => {
-    if (state.settings?.provider) {
-      setProviderId(state.settings.provider);
-      setModelId(state.settings.model ?? '');
-    } else {
-      setModelId('');
-    }
+    setProviderId(savedProvider ?? 'typesafe');
+    setModelId(savedModel ?? '');
     setConsentChecked(false);
     credentialForm.current?.reset();
-  }, [state.settings]);
+  }, [savedProvider, savedModel, state.dataRevision]);
+  useEffect(() => {
+    setConsentChecked(false);
+  }, [state.settings?.consent?.status]);
   useEffect(() => {
     credentialForm.current?.reset();
     setConsentChecked(false);
@@ -300,58 +382,95 @@ export function OptionsSurface({
     state.test === 'passed' &&
     state.permission &&
     state.status?.credentialConfigured;
+  const preferences = state.settings && (
+    <PreferencesForm
+      key={state.dataRevision}
+      controller={controller}
+      settings={state.settings}
+      busy={state.busy}
+    />
+  );
+  const reset = state.status && resetCopy(state.status);
   return (
     <Frame demo={environment.mode === 'demo'}>
-      {environment.mode === 'unavailable' && (
+      {localOnly && (
         <Notice>
           Development build: category settings are saved locally. Provider
           connections and live filtering are unavailable. Do not enter API keys
           into this build.
         </Notice>
       )}
-      <p>
-        Choose categories, connect your own provider, then explicitly consent.
-        Until you enable filtering, your feed stays untouched.
-      </p>
+      {!localOnly && (
+        <p>
+          Choose categories, connect your own provider, then explicitly consent.
+          Until you enable filtering, your feed stays untouched.
+        </p>
+      )}
       {state.loading && <p role="status">Loading settings…</p>}
-      {state.error && <Notice error>{state.error}</Notice>}
+      {state.error && (
+        <>
+          <Notice error>{state.error}</Notice>
+          <Button
+            className="ci-secondary"
+            disabled={state.busy}
+            onClick={() => void controller.refresh()}
+          >
+            Reload settings
+          </Button>
+        </>
+      )}
       <p className="ci-feedback" role="status" aria-live="polite">
         {state.notice}
       </p>
+      <nav className="ci-settings-nav" aria-label="Settings sections">
+        {state.settings && (
+          <>
+            <a href="#categories-title">Category rules</a>
+            <a href="#limits-title">Usage limits</a>
+          </>
+        )}
+        <a href="#provider-title">Provider setup</a>
+        <a href="#consent-title">Consent</a>
+        <a href="#data-title">Data and diagnostics</a>
+      </nav>
       {state.status && (
         <section aria-labelledby="activity-title">
           <h2 id="activity-title">
             {environment.mode === 'demo' ? 'Simulated status: ' : ''}
-            {state.status.enabled
-              ? 'Filtering is active'
-              : 'Filtering is paused'}
+            {statusHeading(state.status)}
           </h2>
           <p>{statusCopy(state.status)}</p>
           <p>
             {state.status.dailyRequestsUsed} of {state.status.dailyRequestLimit}{' '}
             daily requests used. Cost unavailable in public status.
           </p>
-          {resetCopy(state.status) && <p>{resetCopy(state.status)}</p>}
+          {reset && <p>{reset}</p>}
           {state.status.error?.retryAfterMs !== undefined && (
             <p>
               Retry after {Math.ceil(state.status.error.retryAfterMs / 1000)}{' '}
               seconds.
             </p>
           )}
-          <Button
-            disabled={
-              state.busy ||
-              (!state.status.enabled &&
-                (!ready || state.settings?.consent?.status !== 'granted'))
-            }
-            onClick={() => void controller.setEnabled(!state.status?.enabled)}
-          >
-            {state.status.enabled ? 'Pause filtering' : 'Enable filtering'}
-          </Button>
+          {(!localOnly || state.status.enabled) && (
+            <Button
+              disabled={
+                state.busy ||
+                (!state.status.enabled &&
+                  (!ready || state.settings?.consent?.status !== 'granted'))
+              }
+              onClick={() => void controller.setEnabled(!state.status?.enabled)}
+            >
+              {state.status.enabled ? 'Pause filtering' : 'Enable filtering'}
+            </Button>
+          )}
         </section>
       )}
-      <section aria-labelledby="provider-title">
-        <h2 id="provider-title">Connect a provider</h2>
+      {localOnly && preferences}
+      <SetupSection
+        id="provider-title"
+        title={localOnly ? 'Provider setup requirements' : 'Connect a provider'}
+        collapsed={localOnly}
+      >
         <p>
           Selected rendered post text and packaged classification instructions
           go to your chosen provider. Post bodies may contain personal
@@ -424,10 +543,17 @@ export function OptionsSurface({
             : `Grant optional access to ${provider?.permissionLabel ?? 'the verified provider host'}. A browser permission is separate from transmission consent.`}
         </p>
         <Button
-          disabled={state.busy || !configured || !provider?.available}
+          disabled={
+            state.busy ||
+            !configured ||
+            !provider?.available ||
+            state.permission
+          }
           onClick={() => void controller.requestPermission()}
         >
-          Grant provider host access
+          {configured && state.permission
+            ? 'Host access granted'
+            : 'Grant provider host access'}
         </Button>
         <h3>Enter a session credential</h3>
         <p>
@@ -520,10 +646,13 @@ export function OptionsSurface({
                 ? 'Waiting for the connection test. Filtering stays off.'
                 : 'Connection has not been tested in this settings session.'}
         </p>
-      </section>
-      <PreferencesForm controller={controller} />
-      <section aria-labelledby="consent-title">
-        <h2 id="consent-title">Review and consent</h2>
+      </SetupSection>
+      {!localOnly && preferences}
+      <SetupSection
+        id="consent-title"
+        title="Review and consent"
+        collapsed={localOnly && state.settings?.consent?.status !== 'granted'}
+      >
         <p>
           Recipient: {provider?.recipientId ?? 'Select a provider'}. Data:
           rendered post text and classification instructions. Purpose: classify
@@ -583,7 +712,7 @@ export function OptionsSurface({
           Declining leaves your feed untouched. Withdraw consent or pause at any
           time to stop new requests and restore hidden posts.
         </p>
-      </section>
+      </SetupSection>
       <section aria-labelledby="data-title">
         <h2 id="data-title">Data and diagnostics</h2>
         <p>

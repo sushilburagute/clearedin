@@ -16,6 +16,8 @@ for (const file of files) {
   assert.match(html, /name="viewport"/);
   assert.match(html, /noindex/);
   assert.match(html, /Skip to content/);
+  // Inline executable scripts and style blocks would be blocked by public/_headers.
+  assert.doesNotMatch(html, /<script\b(?![^>]*\bsrc=)[^>]*>|<style\b/i);
   assert.doesNotMatch(html, /type="password"|api[_-]?key/i);
   for (const [, href] of html.matchAll(/href="(\/[^"#]*)"/g)) {
     const target = href.endsWith('/') ? `${href}index.html` : href;

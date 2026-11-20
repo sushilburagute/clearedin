@@ -1,128 +1,80 @@
-import {
-  createDefaultCategoryModes,
-  CategoryModeSchema,
-  type CategoryId,
-} from '@clearedin/contracts';
-import { CATEGORY_DEFINITIONS as CATEGORIES } from '@clearedin/taxonomy';
-import {
-  createExperimentalThresholdProfile,
-  createVisibilityEvaluator,
-} from '@clearedin/decision-engine';
-import {
-  SYNTHETIC_FIXTURES,
-  SYNTHETIC_MODEL,
-  createSyntheticInput,
-  createSyntheticClassifier,
-  type SyntheticFixtureId,
-} from '@clearedin/test-fixtures/fake-classifier';
+﻿import type { DemoPolicy } from './demo-policy';
 
-export async function mountDemo(document: Document) {
-  const classifier = createSyntheticClassifier();
-  const results = await Promise.all(
-    SYNTHETIC_FIXTURES.map((fixture) =>
-      classifier.classify(
-        createSyntheticInput(fixture.id as SyntheticFixtureId),
-        { signal: new AbortController().signal },
-      ),
-    ),
-  );
-  const evaluate = createVisibilityEvaluator({ allowExperimental: true });
-  const thresholds = createExperimentalThresholdProfile(
-    'typesafe',
-    SYNTHETIC_MODEL,
-  );
-  let modes = createDefaultCategoryModes();
-  let paused = false;
-  const revealed = new Set<Element>();
-  const posts = [...document.querySelectorAll<HTMLElement>('.demo-post')];
-  const pause = document.querySelector<HTMLButtonElement>('#pause')!;
+export function mountDemo(document: Document) {
   const selects = [
     ...document.querySelectorAll<HTMLSelectElement>('[data-category]'),
   ];
-  const status = document.querySelector<HTMLElement>('#demo-status')!;
-  function render() {
-    let hidden = 0;
-    posts.forEach((post, index) => {
-      const body = post.querySelector<HTMLElement>('[data-body]')!;
-      const button = post.querySelector<HTMLButtonElement>('[data-reveal]')!;
-      const reason = post.querySelector<HTMLElement>('[data-reason]')!;
-      const decision = evaluate({
-        enabled: !paused,
-        consentGranted: true,
-        supportedRoute: true,
-        validIdentity: true,
-        extractorHealthy: true,
-        revealed: revealed.has(post),
-        extraction: SYNTHETIC_FIXTURES[index]?.extraction ?? 'complete',
-        localSponsored: post.hasAttribute('data-sponsored'),
-        categoryModes: modes,
-        classification: results[index] ?? null,
-        thresholds,
-      });
-      const collapse = decision.action === 'collapse';
-      body.hidden = collapse;
-      button.hidden = !collapse;
-      if (collapse) ++hidden;
-      const labels = decision.matchedCategories
-        .map((id) => CATEGORIES.find((category) => category.id === id)!.label)
-        .join(', ');
-      reason.textContent = collapse
-        ? `Hidden: ${labels}`
-        : decision.reason === 'protected'
-          ? `Always show: ${labels}`
-          : decision.reason === 'revealed'
-            ? 'Revealed for this page session'
-            : paused
-              ? 'Visible: demo paused'
-              : decision.reason === 'insufficient'
-                ? 'Visible: insufficient or uncertain classification'
-                : 'Visible: no hidden category matched';
-    });
-    status.textContent = paused
-      ? 'Demo paused. All sample posts are visible.'
-      : `${hidden} of ${posts.length} synthetic posts hidden. Reveal any hidden post below.`;
-  }
-  document
-    .querySelector('form')
-    ?.addEventListener('submit', (event) => event.preventDefault());
-  selects.forEach((select) =>
-    select.addEventListener('change', () => {
-      modes = {
-        ...modes,
-        [select.dataset.category as CategoryId]: CategoryModeSchema.parse(
-          select.value,
-        ),
-      };
-      render();
+  const controls = new Map(
+    selects.map((select) => [select.dataset.category!, select]),
+  );
+  const posts = [...document.querySelectorAll<HTMLElement>('.demo-post')].map(
+    (post) => ({
+      post,
+      policy: JSON.parse(post.dataset.policy!) as DemoPolicy,
+      body: post.querySelector<HTMLElement>('[data-body]')!,
+      button: post.querySelector<HTMLButtonElement>('[data-reveal]')!,
+      reason: post.querySelector<HTMLElement>('[data-reason]')!,
     }),
   );
-  posts.forEach((post) =>
-    post
-      .querySelector<HTMLButtonElement>('[data-reveal]')!
-      .addEventListener('click', () => {
-        revealed.add(post);
-        render();
-        post.tabIndex = -1;
-        post.focus();
-      }),
-  );
-  pause.addEventListener('click', () => {
-    paused = !paused;
+  const pause = document.querySelector<HTMLButtonElement>('#pause')!;
+  const reset = document.querySelector<HTMLButtonElement>('#reset')!;
+  const status = document.querySelector<HTMLElement>('#demo-status')!;
+  const feedJump = document.querySelector<HTMLAnchorElement>('#feed-jump')!;
+  const revealed = new Set<Element>();
+  let paused = false;
+
+  function render() {
+    let hidden = 0;
+    let firstHidden: HTMLElement | undefined;
+    for (const { post, policy, body, button, reason } of posts) {
+      const key = policy.categories
+        .map((id) => controls.get(id)!.value)
+        .join('/');
+      const decision = paused
+        ? policy.paused
+        : revealed.has(post)
+          ? policy.revealed
+          : policy.outcomes[key]!;
+      body.hidden = decision.hidden;
+      button.hidden = !decision.hidden;
+      reason.textContent = decision.message;
+      if (decision.hidden) {
+        hidden++;
+        firstHidden ??= post;
+      }
+    }
     pause.textContent = paused ? 'Resume demo' : 'Pause demo';
-    pause.setAttribute('aria-pressed', String(paused));
-    render();
-  });
-  document.querySelector('#reset')!.addEventListener('click', () => {
-    modes = createDefaultCategoryModes();
+    status.textContent = paused
+      ? 'Paused. All posts are visible.'
+      : `${hidden} of ${posts.length} posts hidden.`;
+    feedJump.href = firstHidden ? `#${firstHidden.id}` : '#demo-feed';
+    feedJump.textContent = firstHidden ? 'First hidden post' : 'Sample feed';
+  }
+
+  function resetDemo() {
     revealed.clear();
     paused = false;
-    selects.forEach((select) => {
-      for (const option of select.options)
-        option.selected = option.value === 'show';
+    for (const select of selects) {
+      select.querySelector<HTMLOptionElement>(
+        'option[value="show"]',
+      )!.selected = true;
+    }
+    render();
+  }
+
+  for (const select of selects) select.addEventListener('change', render);
+  for (const { post, button } of posts) {
+    button.addEventListener('click', () => {
+      revealed.add(post);
+      render();
+      post.focus();
     });
-    pause.textContent = 'Pause demo';
-    pause.setAttribute('aria-pressed', 'false');
+  }
+  pause.addEventListener('click', () => {
+    paused = !paused;
     render();
   });
-  render();
+  reset.addEventListener('click', resetDemo);
+  resetDemo();
+  for (const control of [pause, reset, ...selects]) control.disabled = false;
 }

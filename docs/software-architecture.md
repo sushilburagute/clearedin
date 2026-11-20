@@ -1,75 +1,28 @@
-# Software architecture
+# Architecture and feed rules
 
-## Proposed stack and boundaries
+The WXT/React extension and Astro website share a TypeScript workspace. The shipping extension runs a settings broker and an inert content script. The feed adapter, coordinator, and provider adapters are implemented and exercised with synthetic inputs. Connecting them to a real feed requires the decisions in the [release ledger](release/gates.json).
 
-Use a TypeScript monorepo with pnpm workspaces. Start with workspace scripts; add a task cache such as Turborepo only when build volume justifies it. Use WXT + React for browser extension entrypoints, Astro for the static website, shared CSS tokens, Zod or equivalent runtime schemas, Vitest for pure logic, and Playwright for Chromium integration. Firefox requires packaged add-on testing in Firefox; a Playwright Firefox page test is not proof that the extension works there.
+| Change | Start here |
+| --- | --- |
+| Popup, options, or browser entrypoints | [Extension app](../apps/extension/entrypoints) and [shared controls and controllers](../packages/ui/src) |
+| Message formats, settings, or migrations | [Contract schemas](../packages/contracts/src) and [storage](../packages/storage/src) |
+| Feed discovery, extraction, or placeholders | [LinkedIn adapter](../packages/linkedin-adapter/src) and [content session](../apps/extension/src/content/session.ts) |
+| Labels, prompts, or precedence | [Taxonomy](../packages/taxonomy/src) and [decision engine](../packages/decision-engine/src) |
+| Provider requests or scheduling | [Provider registry](../packages/providers/src/registry.ts) and [background coordinator](../apps/extension/src/background/coordinator.ts) |
+| Website demo | [Build-time policy](../apps/website/src/demo-policy.ts) and [client controls](../apps/website/src/demo.ts) |
 
-[WXT](https://wxt.dev/guide/introduction.html) supports browser-targeted extension development. Treat generated manifests as reviewed artifacts. Chrome uses an MV3 service worker; Firefox background support differs and requires its own output and tests. See [MDN background configuration](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/background).
+## How a post gets a visibility decision
 
-```text
-apps/
-  extension/           WXT entrypoints: content, background, popup, options
-  website/             Astro static pages and synthetic interactive demo
-packages/
-  contracts/           schemas, message types, settings versions
-  taxonomy/            stable category IDs, definitions, examples
-  decision-engine/     pure visibility rules and precedence
-  providers/           Jev, OpenAI, Anthropic adapters; background use only
-  linkedin-adapter/    DOM discovery, extraction, identity, restoration
-  storage/             browser persistence, migrations, cache and limits
-  ui/                  React controls and CSS tokens; no provider imports
-  test-fixtures/       synthetic DOM, posts, and model responses
-docs/                  this documentation
-```
+1. The adapter reads visible post text on the desktop home feed. It associates each node with an identity, content digest, and generation so a late reply cannot hide a recycled post. An explicit visible Sponsored or Promoted disclosure supplies the local sponsored signal.
+2. The coordinator checks enablement, consent, provider, and generation. Complete text can use a cached classification or share a pending request. Cache keys include the content digest, extraction and extractor version, taxonomy, prompt, provider, model, and adapter version.
+3. A provider labels content. Local policy decides whether to collapse it. All categories start at **Show normally**. A qualifying **Always show** match wins over **Hide**. For example, a technical product launch stays visible when launches are hidden and technical content is protected.
+4. Leave the post visible on pause, missing consent, an unsupported route, stale identity, unhealthy extraction, or a user reveal. Partial text, abstention, and invalid results supply no remote evidence. A reliable local sponsored disclosure can still qualify under the same precedence rules. Keep the post visible while a possible protection match is pending.
+5. Changing preferences reuses available classifications. Reveal restores the original post for the page session. Pause or teardown cancels obsolete subscriptions, restores host markup, and removes placeholders and announcements.
 
-Task 01 establishes this layout with app shells, contracts, taxonomy, and synthetic fixtures; feature packages remain implementation boundaries. See the [foundation handoff](evidence/01-foundation.md) for exact exports. Shared packages cannot depend on apps; website code cannot import credential or browser-background modules. Keep the classification pipeline independent of LinkedIn selectors so a future source adapter can reuse it.
+## Storage and limits
 
-## Runtime flow
+Settings start disabled, with English selected, a daily limit of 200 requests, and no cost cap. Settings, consent, and the usage ledger are local. The background serializes writes and advances a generation when an operation invalidates outstanding work. An explicit reset can recover incompatible data and leaves a disabled generation marker.
 
-```text
-LinkedIn rendered post (untrusted)
-  -> content script: extract and minimize text; keep DOM reference locally
-  -> validated extension message
-  -> background coordinator: consent, dedup, cache, budget, selected adapter
-  -> selected provider over HTTPS
-  -> schema-validated normalized category judgments
-  -> deterministic local policy using current preferences
-  -> content script: check identity/version, collapse or restore
+Reserve a request durably before dispatch. Failed or interrupted attempts still count. Verify the response’s request ID and provider configuration before settling cost. Unknown prices block requests when a monetary cap is active. The ledger uses its original timezone and a persisted clock watermark so a restart or clock rollback cannot reset a day twice.
 
-Extension options -> trusted settings/credential broker -> background
-Public website    -> static hosting only; no feed/key access
-```
-
-The background context owns credentials and outbound provider requests. Content scripts never receive keys, choose request URLs, or proxy arbitrary fetches. Cross-origin requests belong in the extension context with appropriate host permissions, as described by [Chrome's network guidance](https://developer.chrome.com/docs/extensions/develop/concepts/network-requests).
-
-## Extraction strategy
-
-Choose DOM extraction for v1. It limits work to rendered content and avoids dependence on undocumented private responses. Chrome `webRequest` exposes request lifecycle information but is not a general response-body reader. Firefox-specific response filtering or page-world fetch hooks would introduce a different compatibility and trust model. See the [Chrome API reference](https://developer.chrome.com/docs/extensions/reference/api/webRequest).
-
-Use a bounded `MutationObserver` under the feed root and an `IntersectionObserver` to enqueue visible posts plus approximately one viewport of lookahead. Debounce mutations, ignore extension-owned changes, and process nodes in small batches. Stop observers on unsupported routes. Never click, scroll, or prefetch LinkedIn content.
-
-Selectors live exclusively in the LinkedIn adapter with fixture coverage and a documented fallback order. Discover the post container, extract visible body and link-preview title, and separate visible repost context where reliable. Exclude author identity, avatars, engagement counts, comments, tracking URLs, messages, and surrounding page text. If a selector is ambiguous, skip the post.
-
-Prefer a stable post identifier available in the DOM for local identity only. Otherwise derive an ephemeral identity. Pair identity with a normalized-content digest and a node generation counter. LinkedIn may recycle the same element for another post: restore old state, increment generation, and reject any old result. Text expansion changes the digest and permits reclassification.
-
-## Queue, state, and restart behavior
-
-Use one background coordinator for all tabs: initial concurrency 2, queue cap 50, one request per post, and a 10-second overall deadline per logical classification. Deduplicate concurrent requests by cache key and attach subscribers. Remove stale/offscreen subscribers and drop queued work with no subscriber. Bound provider question count and output size.
-
-Cache normalized classifications, not final visibility. Cache identity includes content digest, extraction completeness, extractor version, taxonomy version, prompt/question version, provider, model, and adapter version. Initial cache is memory-only, LRU, max 500 entries, TTL 30 minutes. Settings changes rerun policy without invalidating classification. Provider/model or taxonomy changes invalidate incompatible entries. Check the current post's extraction completeness before applying cached results; partial extraction cannot inherit permission to hide from another post.
-
-Background suspension is normal. Persist settings, consent, and request reservations before requests start; do not persist raw post bodies or a raw-text retry queue. Rebuild a bounded queue from still-visible posts after restart. Memory cache loss can cause another charged request; limits must remain effective. Never promise exactly-once billing where a provider offers no idempotency guarantee. [Chrome lifecycle guidance](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle).
-
-Session key storage must survive ordinary worker suspension through a supported trusted-context session facility. If a supported browser cannot provide that isolation, require re-entry after background restart or change the architecture; do not fall back to plaintext disk storage silently.
-
-## Visibility lifecycle
-
-`discovered -> queued -> classifying -> classified -> visible | collapsed`
-
-Any error or invalid identity transitions to visible. Pause, revoked consent, route exit, and extension-owned teardown restore content and invalidate outstanding work with an enablement generation. A result applies only if node identity, content digest, generation, and current settings are still valid. Never let a stale response re-hide a revealed post.
-
-## Website and infrastructure
-
-Deploy a static website to a CDN-backed host chosen during setup. Use no user accounts, database, application API, or provider gateway in v1. A feedback contact can link to a repository issue template or support address; users must be told to exclude keys and real feed captures. Website availability must not affect filtering in an installed extension.
-
-All executable extension code, prompts, taxonomy definitions, and UI assets ship in the reviewed package. Provider responses are data only. No remote selectors or script hot patches; selector fixes require a store update. This trades faster repairs for a simpler reviewable trust boundary.
+The scheduler allows two active jobs and 50 queued jobs with a 10-second deadline from admission. The memory-only classification cache holds up to 500 entries for 30 minutes. Changing model, taxonomy, or prompt requires compatible cache keys and a fresh [evaluation](testing-and-evaluation.md).

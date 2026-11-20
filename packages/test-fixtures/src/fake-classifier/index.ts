@@ -90,6 +90,27 @@ const seed = [
     categories: ['engagement_bait'],
     abstention: null,
   },
+  {
+    id: 'career-workshop',
+    text: '[Synthetic example] At our free workshop on Friday, practice explaining a debugging decision in a job interview. Bring a concrete trade-off and talk through the alternatives.',
+    extraction: 'complete',
+    categories: ['career_advice', 'event'],
+    abstention: null,
+  },
+  {
+    id: 'industry-news',
+    text: '[Synthetic example] A new interoperability standard lets competing sensors share the same data format. Manufacturers can now replace one part without rewriting every integration.',
+    extraction: 'complete',
+    categories: ['industry_news'],
+    abstention: null,
+  },
+  {
+    id: 'consulting-milestone',
+    text: '[Synthetic example] Today marks my first anniversary as an independent consultant. I have two openings for paid database reviews next month. Contact me to book a session.',
+    extraction: 'complete',
+    categories: ['personal_update', 'promotion'],
+    abstention: null,
+  },
 ] as const satisfies readonly SyntheticFixture[];
 
 export type SyntheticFixtureId = (typeof seed)[number]['id'];

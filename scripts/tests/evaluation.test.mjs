@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { link, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   evaluate,
   proportion,
@@ -93,5 +97,64 @@ test('unknown cost stays unknown and abstentions cannot hide', () => {
     validateEvaluation({ ...metadata, rows: [{ ...row, abstained: true }] }, [
       'job_posting',
     ]).some((issue) => issue.includes('Abstention')),
+  );
+});
+
+test('padding cannot create a second annotator, example, or source group', () => {
+  const issues = validateEvaluation(
+    {
+      ...metadata,
+      annotators: ['reader', 'reader '],
+      rows: [
+        row,
+        { ...row, id: ' a ', templateGroup: 'one ', split: 'development' },
+        null,
+      ],
+    },
+    ['job_posting'],
+  );
+  for (const message of [
+    'annotator',
+    'duplicate',
+    'leakage',
+    'Invalid evaluation row',
+  ])
+    assert(issues.some((issue) => issue.includes(message)));
+});
+
+test('an all-test dataset cannot pass the calibration split requirement', () => {
+  const data = { ...metadata, rows: [row] };
+  const report = evaluate(data.rows, ['job_posting']);
+  assert(
+    qualityGates(data, report, ['job_posting']).some((issue) =>
+      issue.includes('development split'),
+    ),
+  );
+});
+
+test('the CLI preserves input files and includes only declared report metadata', async (t) => {
+  const directory = await mkdtemp(join(tmpdir(), 'clearedin-evaluation-'));
+  t.after(() => rm(directory, { recursive: true, force: true }));
+  const input = join(directory, 'input.json');
+  const alias = join(directory, 'alias.json');
+  const output = join(directory, 'report.json');
+  const source = JSON.stringify({
+    ...metadata,
+    privateNotes: 'exclude',
+    rows: [row],
+  });
+  await writeFile(input, source);
+  await link(input, alias);
+  const run = (destination) =>
+    spawnSync(process.execPath, ['scripts/evaluate.mjs', input, destination], {
+      encoding: 'utf8',
+    });
+  assert.equal(run(alias).status, 1);
+  assert.equal(await readFile(input, 'utf8'), source);
+  const result = run(output);
+  assert.equal(result.status, 2, result.stderr);
+  assert.deepEqual(
+    JSON.parse(await readFile(output, 'utf8')).metadata,
+    metadata,
   );
 });

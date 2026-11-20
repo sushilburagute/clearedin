@@ -1,87 +1,23 @@
 ---
+import { createElement } from 'react';
 import Site from '../layouts/Site.astro';
-import { CATEGORY_DEFINITIONS as CATEGORIES } from '@clearedin/taxonomy';
-import { SYNTHETIC_FIXTURES } from '@clearedin/test-fixtures/fake-classifier';
+import { Demo } from '../components/Demo';
+import { buildDemoPolicies } from '../demo-policy';
+const policies = await buildDemoPolicies();
 ---
 
 <Site
-  title="Try your rules"
-  description="Change category rules on synthetic posts. No API keys, remote inference, or live feed access."
+  title="Full demo"
+  description="Explore twelve category rules on a fixed sample feed. All changes stay in this page session."
+  page={createElement(Demo, { policies })}
 >
-  <h1>Try your rules.</h1>
-  <p class="lead">
-    A small synthetic feed. Real visibility rules. Change a category and see
-    what stays.
-  </p>
-  <p class="notice">
-    Fixed example labels, not model predictions or accuracy evidence. No API key
-    or provider call. All changes stay in this page session.
-  </p>
-  <noscript>
-    <p>
-      Enable JavaScript to change demo rules. All sample posts remain visible
-      without it.
-    </p>
-  </noscript>
-  <div class="actions">
-    <button id="pause" aria-pressed="false">
-      Pause demo
-    </button>
-    <button id="reset" class="secondary">
-      Reset all rules
-    </button>
-  </div>
-  <p id="demo-status" role="status" aria-live="polite">
-    All posts start visible.
-  </p>
-  <div class="demo-layout">
-    <form class="demo-controls" aria-label="Category rules">
-      <h2>Your categories</h2>
-      <p>
-        Always show wins over Hide. Show normally lets other matching rules
-        apply.
-      </p>
-      {CATEGORIES.map((category) => (
-        <div>
-          <label for={`rule-${category.id}`}>{category.label}</label>
-          <select
-            id={`rule-${category.id}`}
-            data-category={category.id}
-            aria-describedby={`help-${category.id}`}
-          >
-            <option value="show">Show normally</option>
-            <option value="hide">Hide</option>
-            <option value="always_show">Always show</option>
-          </select>
-          <small id={`help-${category.id}`}>{category.definition}</small>
-        </div>
-      ))}
-    </form>
-    <section aria-label="Synthetic feed" id="demo-feed">
-      {SYNTHETIC_FIXTURES.map((fixture, index) => (
-        <article class="demo-post" data-fixture={fixture.id}>
-          <h3>Synthetic post {index + 1}</h3>
-          <p data-body>{fixture.text}</p>
-          <span data-reason>Visible</span>
-          <button type="button" data-reveal hidden>
-            Show this post
-          </button>
-        </article>
-      ))}
-      <article class="demo-post" data-sponsored>
-        <h3>Synthetic sponsored post</h3>
-        <p data-body>
-          [Synthetic example] Sponsored: Explore our imaginary developer course.
-        </p>
-        <span data-reason>Visible</span>
-        <button type="button" data-reveal hidden>
-          Show this post
-        </button>
-      </article>
-    </section>
-  </div>
   <script>
     import { mountDemo } from '../demo';
-    void mountDemo(document);
+    try {
+      mountDemo(document);
+    } catch {
+      document.querySelector('#demo-status')!.textContent =
+        'The demo could not start. Reload the page to try again.';
+    }
   </script>
 </Site>
