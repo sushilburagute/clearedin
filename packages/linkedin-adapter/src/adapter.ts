@@ -396,24 +396,26 @@ export function createLinkedInAdapter(
     if (suspended || !validRoute()) return;
     pruneCandidates();
     let scanned = 0;
-    while (scanned++ < SCAN_BATCH && (walker || scanRoots.length)) {
+    // Let the pending queue drain before advancing the walker. Advancing through
+    // a full queue would permanently skip posts already present in long feeds.
+    while (
+      scanned++ < SCAN_BATCH &&
+      pending.size < MAX_PENDING &&
+      (walker || scanRoots.length)
+    ) {
       if (!walker) {
         const start = scanRoots.shift()!;
         if (owned(start) || !root?.contains(start)) continue;
         walker = start.ownerDocument.createTreeWalker(start, 1);
         if (start.matches(SELECTORS.post)) pending.add(start);
+        continue;
       }
       const next = walker.nextNode() as Element | null;
       if (!next) {
         walker = null;
         continue;
       }
-      if (
-        !owned(next) &&
-        next.matches(SELECTORS.post) &&
-        pending.size < MAX_PENDING
-      )
-        pending.add(next);
+      if (!owned(next) && next.matches(SELECTORS.post)) pending.add(next);
     }
     let processed = 0;
     for (const node of pending) {
