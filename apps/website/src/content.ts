@@ -105,7 +105,8 @@ export const pages = [
         title: 'This website and demo',
         paragraphs: [
           'Vercel hosts clearedin.sush.dev. The sample posts and rules load with the page. Your choices stay in this tab and reset when you reload. The demo accesses neither your LinkedIn account nor an AI provider.',
-          'Vercel receives the requests needed to serve the site. The demo code includes no analytics. We have yet to confirm the hosting account’s logging and retention settings.',
+          'The published website loads Google Tag Manager for Google Analytics to measure visits and site usage. Google Analytics can use cookies and receive information such as your browser type and the pages you visit.',
+          'Vercel receives the requests needed to serve the site. We have yet to confirm the hosting account’s logging and retention settings.',
         ],
       },
       {

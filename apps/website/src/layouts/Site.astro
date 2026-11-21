@@ -12,6 +12,8 @@ interface Props {
 }
 const { title, description, page, indexable = true } = Astro.props;
 const allowIndexing = process.env.VERCEL_ENV === 'production' && indexable;
+const enableAnalytics =
+  import.meta.env.PROD && process.env.VERCEL_ENV !== 'preview';
 const html = renderToString(
   createElement(Frame, { path: Astro.url.pathname, children: page }),
 );
@@ -21,6 +23,7 @@ const html = renderToString(
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    {enableAnalytics && <script is:inline async src="/tag-manager.js"></script>}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {!allowIndexing && <meta name="robots" content="noindex" />}
     {indexable && (

@@ -22,6 +22,13 @@ for (const file of files) {
     file,
   );
   assert.match(html, /Skip to content/);
+  const analyticsScripts =
+    html.match(/<script\b[^>]*\bsrc="\/tag-manager\.js"/g) ?? [];
+  assert.equal(
+    analyticsScripts.length,
+    process.env.VERCEL_ENV === 'preview' ? 0 : 1,
+    file,
+  );
   // Inline executable scripts and style blocks would be blocked by public/_headers.
   assert.doesNotMatch(html, /<script\b(?![^>]*\bsrc=)[^>]*>|<style\b/i);
   assert.doesNotMatch(html, /type="password"|api[_-]?key/i);
