@@ -20,7 +20,7 @@ export const pages = [
       {
         title: 'Uncertainty leaves the post visible',
         paragraphs: [
-          'Incomplete text, unsupported languages, ambiguous answers, provider errors, and unvalidated thresholds keep remote classifications from hiding posts. A visible sponsored disclosure is a separate local signal. Scores are not guaranteed probabilities.',
+          'Incomplete text, uncertain answers, and provider errors leave organic posts visible. The development extension uses experimental decision thresholds. It skips posts marked Sponsored or Promoted. The website demo lets you explore sponsored examples too.',
         ],
       },
       {
@@ -65,7 +65,7 @@ export const pages = [
       {
         title: 'What the development build does',
         paragraphs: [
-          'Try the sample demo from the extension’s options page and save category preferences locally. Live filtering and provider connections are disabled. Chrome Web Store and Firefox Add-ons listings are pending.',
+          'The development extension supports opt-in filtering on the desktop LinkedIn home feed. Open its settings to connect a provider and choose rules. Chrome Web Store and Firefox Add-ons listings are pending.',
         ],
       },
     ],
@@ -74,30 +74,30 @@ export const pages = [
     slug: 'setup',
     title: 'Does the demo need a provider?',
     description:
-      'You can try every rule without an account or API key. Provider setup is planned for the browser extension.',
+      'The website demo works without an account or API key. Learn how to connect your provider in the development extension.',
     sections: [
       {
-        title: 'Three separate adapters',
+        title: 'Choose a provider',
         paragraphs: [
-          'TypeSafe Jev uses typed judgments. OpenAI and Anthropic use structured language-model outputs. These approaches share a classification contract, but their scores need separate evaluation. Adapter code exists; no live provider is enabled in this build.',
+          'The extension offers TypeSafe Jev, OpenAI and Anthropic. Choose the provider for your own API key. Each uses a specific model, and access depends on your provider account. The development build uses experimental classification thresholds.',
         ],
       },
       {
-        title: 'Planned setup flow',
+        title: 'Connect and enable',
         paragraphs: [
-          'Select a supported provider and model, review the recipient and data disclosure, grant its browser host permission, and enter a key only in extension-owned settings. Test with a synthetic post, choose category rules, then explicitly consent and enable. Browser permission alone is not consent. This flow is not yet available for live use.',
+          'Open the extension settings, choose a provider, grant permission for its API, and enter your key there. Test the connection with a sample, choose Hide or Always show rules, review what your provider receives, and enable filtering. Open or reload the desktop LinkedIn home feed to try your rules.',
         ],
       },
       {
         title: 'Costs and limits',
         paragraphs: [
-          'Provider API usage may cost money separately from any chat subscription. Planned request accounting reserves attempts before dispatch; failures and retries can still be billed. An estimated cost cap is not a provider billing guarantee. Pricing and supported models must be verified before enablement.',
+          'The sample connection test and feed classification use your provider account and can incur charges. Set a daily request limit in the extension. Failed attempts count. Check your provider billing dashboard for actual charges.',
         ],
       },
       {
-        title: 'Credential custody is still under review',
+        title: 'Where your key stays',
         paragraphs: [
-          'The proposed key store is trusted browser-session storage, never persistent local or sync storage. Client-side credentials have security limitations. Browser restart and permission checks and provider-specific custody decisions remain release blockers. Never paste an API key into this website.',
+          'Enter your key only in the installed extension. Privileged extension code holds it in browser-session storage and uses it to authenticate requests directly to your selected provider. Enter it again after restarting your browser. Disconnect to forget the key.',
         ],
       },
     ],
@@ -106,7 +106,7 @@ export const pages = [
     slug: 'privacy',
     title: 'Know where your data goes',
     description:
-      'Current preview data practices and the proposed live classification flow.',
+      'How the website demo and the opt-in development extension handle your data.',
     sections: [
       {
         title: 'This website and demo',
@@ -119,19 +119,19 @@ export const pages = [
       {
         title: 'The current extension',
         paragraphs: [
-          'Category preferences and request limits are saved in extension-local storage through a trusted background broker. Clear all data resets that local state. Provider credential entry, remote classification, and live feed extraction are disabled in the production entrypoints. The separate UI simulation does not persist its changes.',
+          'Your rules, consent and request counts stay in extension-local storage. Your provider API key stays in privileged browser-session storage and is sent to that provider for authentication. Clear all data resets local state. Your provider manages its own records.',
         ],
       },
       {
-        title: 'Proposed live data flow',
+        title: 'What your provider receives',
         paragraphs: [
-          'A future enabled extension would minimize rendered home-feed text and send it with classification instructions directly to your chosen provider. Author details, comments, messages, tracking URLs, and local post identifiers are excluded from the planned payload. No ClearedIn feed backend or key relay is implemented.',
+          'The connection test sends a fixed sample. After you consent and enable filtering, the extension sends selected visible post text and classification instructions directly to your provider. Names or personal information written in the post itself may be included. The extension skips recognized sponsored posts and excludes author profile fields, comments, messages and local post identifiers. Your provider receives the request from your network address.',
         ],
       },
       {
         title: 'Provider retention and consent',
         paragraphs: [
-          'Provider retention varies by provider, account, and configuration. No zero-retention promise is made. The chosen recipient, applicable retention information, and explicit consent must be presented before live transmission. Withdrawal must stop requests and restore posts.',
+          'Retention depends on your provider, account and configuration. Review the provider information in setup before enabling filtering. Withdraw consent to stop new requests and restore collapsed posts. Previously transmitted text remains subject to your provider’s retention policy.',
         ],
       },
     ],
@@ -150,7 +150,7 @@ export const pages = [
       {
         title: 'Why is a post still visible?',
         paragraphs: [
-          'Always show overrides Hide. Uncertain or incomplete classifications also stay visible. In this development build, live filtering is disabled for every post.',
+          'Always show overrides Hide. Uncertain or incomplete classifications, recognized sponsored posts, and posts outside the desktop home feed stay visible. Check your provider connection, daily request limit and saved rules in the extension settings.',
         ],
       },
       {
@@ -174,7 +174,7 @@ export const pages = [
       {
         title: 'What if the extension stops working?',
         paragraphs: [
-          'Pause it or disable it in your browser. Current builds do not modify the live feed. Future runtime errors must leave posts visible, and selector repairs must ship as reviewed extension updates.',
+          'Pause filtering in the extension. Reload the home feed if you arrived from another LinkedIn page. If your browser restarted, re-enter the session key in settings. Contact support with your browser and extension version if the issue continues.',
         ],
       },
     ],

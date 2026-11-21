@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./catalog": "./src/catalog.ts",
     "./registry": "./src/registry.ts",
     "./types": "./src/types.ts",
     "./typesafe": "./src/typesafe/index.ts",

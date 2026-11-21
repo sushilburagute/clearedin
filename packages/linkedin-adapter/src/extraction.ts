@@ -26,7 +26,7 @@ export interface ExtractedContent {
 export function supportsFeedRoute(url: URL): boolean {
   return (
     url.origin === 'https://www.linkedin.com' &&
-    (url.pathname === '/feed' || url.pathname.startsWith('/feed/')) &&
+    (url.pathname === '/feed' || url.pathname === '/feed/') &&
     !url.username &&
     !url.password
   );

@@ -9,7 +9,7 @@
   PublicStatus,
   ThresholdProfile,
 } from '@clearedin/contracts';
-import { CATEGORY_IDS, REMOTE_CATEGORY_IDS } from '@clearedin/contracts';
+import { REMOTE_CATEGORY_IDS } from '@clearedin/contracts';
 
 interface SessionPost {
   post: ExtractedPost;
@@ -18,47 +18,29 @@ interface SessionPost {
   requestId: string | null;
 }
 
-/** Runtime-independent lifecycle, exercised against synthetic DOM and transport. */
 export function createContentSession(input: {
   adapter: ExtractionAdapter;
   client: ContentClient;
   evaluate: EvaluateVisibility;
-  thresholds: ThresholdProfile | null;
+  thresholds(status: PublicStatus): ThresholdProfile | null;
   supportedRoute(): boolean;
-  rescan(): void;
+  watchRoot(changed: (root: Element | null) => void): () => void;
   requestId(): string;
 }) {
   let status: PublicStatus | null = null;
+  let thresholds: ThresholdProfile | null = null;
   let latestGeneration = -1;
   let broadcastRevision = 0;
-  let startSequence = 0;
+  let readSequence = 0;
   let healthy = false;
   let disposed = false;
   let root: Element | null = null;
+  let stopWatching: (() => void) | null = null;
   let stopObserving: (() => void) | null = null;
   const controller = new AbortController();
   const posts = new Map<string, SessionPost>();
   const identityKey = (identity: PostIdentity) => JSON.stringify(identity);
 
-  function apply(entry: SessionPost) {
-    if (!status || disposed) return;
-    input.adapter.apply(
-      entry.post.identity,
-      input.evaluate({
-        enabled: status.enabled,
-        consentGranted: status.consentGranted,
-        supportedRoute: input.supportedRoute(),
-        validIdentity: true,
-        extractorHealthy: healthy,
-        revealed: entry.revealed,
-        extraction: entry.post.extraction,
-        localSponsored: entry.post.localSponsored,
-        categoryModes: status.categoryModes,
-        classification: entry.result,
-        thresholds: input.thresholds,
-      }),
-    );
-  }
   function cancel(entry: SessionPost) {
     if (!entry.requestId) return;
     void input.client
@@ -71,81 +53,81 @@ export function createContentSession(input: {
       .catch(() => undefined);
     entry.requestId = null;
   }
+
   function restore() {
     for (const entry of posts.values()) cancel(entry);
     posts.clear();
     input.adapter.restoreAll();
   }
+
+  function stopFeed() {
+    stopWatching?.();
+    stopWatching = null;
+    stopObserving?.();
+    stopObserving = null;
+    root = null;
+    restore();
+  }
+
   async function evaluatePost(entry: SessionPost) {
     if (
-      !status?.enabled ||
-      !status.consentGranted ||
       !healthy ||
+      !status ||
+      !thresholds ||
       !input.supportedRoute() ||
-      disposed ||
-      entry.revealed ||
-      entry.result !== null ||
-      !input.thresholds ||
-      input.thresholds.provider !== status.provider ||
-      input.thresholds.model !== status.model ||
-      entry.post.extraction !== 'complete' ||
-      (entry.post.localSponsored &&
-        status.categoryModes.sponsored === 'always_show')
-    ) {
-      cancel(entry);
-      apply(entry);
+      disposed
+    )
       return;
-    }
-    const localHide =
-      entry.post.localSponsored && status.categoryModes.sponsored === 'hide';
-    const modes = status.categoryModes;
-    const { categories } = input.thresholds;
-    const relevantMode = localHide ? 'always_show' : 'hide';
-    if (
-      !REMOTE_CATEGORY_IDS.some(
-        (category) => categories[category] && modes[category] === relevantMode,
-      )
-    ) {
-      cancel(entry);
-      apply(entry);
-      return;
-    }
-    if (entry.requestId) return;
-    // A remote protection rule can override even a reliable local Hide rule.
-    // Keep the host visible while a decision is pending.
-    input.adapter.restore(entry.post.identity);
-    if (posts.get(identityKey(entry.post.identity)) !== entry) return;
-    const generation = status.enablementGeneration;
-    const id = input.requestId();
-    entry.requestId = id;
-    try {
-      const reply = await input.client.send({
-        protocolVersion: 1,
-        requestId: id,
-        type: 'CLASSIFY_POST',
-        post: entry.post,
-        enablementGeneration: generation,
-      });
-      if (entry.requestId !== id) return;
-      if (
-        reply.type !== 'CLASSIFICATION_RESULT' ||
-        reply.enablementGeneration !== generation ||
-        identityKey(reply.identity) !== identityKey(entry.post.identity)
-      ) {
-        apply(entry);
+    if (entry.revealed || entry.post.extraction !== 'complete') return;
+    if (!entry.result) {
+      if (entry.requestId) return;
+      const id = input.requestId();
+      const generation = status.enablementGeneration;
+      entry.requestId = id;
+      try {
+        const reply = await input.client.send({
+          protocolVersion: 1,
+          requestId: id,
+          type: 'CLASSIFY_POST',
+          post: entry.post,
+          enablementGeneration: generation,
+        });
+        if (
+          entry.requestId !== id ||
+          reply.type !== 'CLASSIFICATION_RESULT' ||
+          reply.enablementGeneration !== generation ||
+          identityKey(reply.identity) !== identityKey(entry.post.identity)
+        )
+          return;
+        entry.result = reply.result;
+      } catch {
         return;
+      } finally {
+        if (entry.requestId === id) entry.requestId = null;
       }
-      entry.result = reply.result;
-      apply(entry);
-    } catch {
-      // A failed remote request still leaves independent local rules in effect.
-      if (entry.requestId === id) apply(entry);
-    } finally {
-      if (entry.requestId === id) entry.requestId = null;
     }
+    if (posts.get(identityKey(entry.post.identity)) !== entry) return;
+    input.adapter.apply(
+      entry.post.identity,
+      input.evaluate({
+        enabled: status.enabled,
+        consentGranted: status.consentGranted,
+        supportedRoute: input.supportedRoute(),
+        validIdentity: true,
+        extractorHealthy: healthy,
+        revealed: entry.revealed,
+        extraction: entry.post.extraction,
+        localSponsored: false,
+        categoryModes: status.categoryModes,
+        classification: entry.result,
+        thresholds,
+      }),
+    );
   }
+
   const callbacks: ExtractionCallbacks = {
     onPost(post) {
+      if (post.localSponsored) return;
       const key = identityKey(post.identity);
       if (posts.has(key)) return;
       const entry = { post, revealed: false, result: null, requestId: null };
@@ -161,10 +143,6 @@ export function createContentSession(input: {
     onHealthChanged(value) {
       healthy = value;
       if (!value) restore();
-      else
-        for (const entry of posts.values()) {
-          void evaluatePost(entry);
-        }
     },
     onReveal(identity) {
       const entry = posts.get(identityKey(identity));
@@ -175,49 +153,100 @@ export function createContentSession(input: {
       }
     },
   };
-  function activate() {
-    if (
-      !root ||
-      !status?.enabled ||
-      !status.consentGranted ||
-      !input.supportedRoute() ||
-      !Object.values(status.categoryModes).includes('hide')
-    )
-      return;
-    if (stopObserving && healthy) input.rescan();
-    else {
-      stopObserving?.();
+
+  function observe() {
+    if (root && !stopObserving && input.supportedRoute())
       stopObserving = input.adapter.observe(root, callbacks, controller.signal);
-    }
   }
+
   function update(next: PublicStatus) {
     if (disposed || next.enablementGeneration < latestGeneration) return;
-    latestGeneration = next.enablementGeneration;
     const previous = status;
-    status = next;
+    latestGeneration = next.enablementGeneration;
     if (
       !previous ||
-      next.enablementGeneration !== previous.enablementGeneration ||
-      next.enabled !== previous.enabled ||
-      next.consentGranted !== previous.consentGranted ||
-      next.provider !== previous.provider ||
-      next.model !== previous.model
+      previous.model !== next.model ||
+      previous.provider !== next.provider
+    )
+      thresholds = input.thresholds(next);
+    status = next;
+    if (
+      !next.enabled ||
+      !next.consentGranted ||
+      !next.credentialConfigured ||
+      !thresholds ||
+      !input.supportedRoute() ||
+      !REMOTE_CATEGORY_IDS.some(
+        (id) => next.categoryModes[id] === 'hide' && thresholds?.categories[id],
+      )
     ) {
-      restore();
-      activate();
+      stopFeed();
       return;
     }
     if (
-      CATEGORY_IDS.every(
-        (id) => previous.categoryModes[id] === next.categoryModes[id],
-      )
+      !previous ||
+      previous.enablementGeneration !== next.enablementGeneration ||
+      previous.provider !== next.provider ||
+      previous.model !== next.model
     )
-      return;
-    if (!Object.values(next.categoryModes).includes('hide')) restore();
-    else if (!Object.values(previous.categoryModes).includes('hide'))
-      activate();
-    else for (const entry of posts.values()) void evaluatePost(entry);
+      stopFeed();
+
+    if (!stopWatching) {
+      let firstRoot = true;
+      stopWatching = input.watchRoot((nextRoot) => {
+        if (root === nextRoot || disposed) return;
+        stopObserving?.();
+        stopObserving = null;
+        restore();
+        root = nextRoot;
+        if (!root) return;
+        if (firstRoot) {
+          firstRoot = false;
+          observe();
+        } else {
+          // Recheck privileged state before attaching to a replacement tree.
+          void readStatus();
+        }
+      });
+    } else {
+      observe();
+      if (
+        previous &&
+        REMOTE_CATEGORY_IDS.some(
+          (id) => previous.categoryModes[id] !== next.categoryModes[id],
+        )
+      )
+        for (const entry of posts.values()) void evaluatePost(entry);
+    }
   }
+
+  async function readStatus() {
+    const sequence = ++readSequence;
+    const before = broadcastRevision;
+    try {
+      const reply = await input.client.send({
+        protocolVersion: 1,
+        requestId: input.requestId(),
+        type: 'GET_PUBLIC_STATUS',
+      });
+      if (disposed || sequence !== readSequence) return;
+      if (
+        reply.type === 'PUBLIC_STATUS' &&
+        (before === broadcastRevision ||
+          reply.status.enablementGeneration > latestGeneration)
+      )
+        update(reply.status);
+      else if (before === broadcastRevision) stopFeed();
+    } catch {
+      if (
+        !disposed &&
+        sequence === readSequence &&
+        before === broadcastRevision
+      )
+        stopFeed();
+    }
+  }
+
   const unsubscribe = input.client.subscribe((event) => {
     if (disposed) return;
     const generation =
@@ -227,54 +256,21 @@ export function createContentSession(input: {
     if (generation < latestGeneration) return;
     ++broadcastRevision;
     if (event.type === 'RESTORE_ALL') {
-      latestGeneration = event.enablementGeneration;
+      latestGeneration = generation;
       status = null;
-      restore();
+      stopFeed();
     } else update(event.status);
   });
+
   return {
-    async start(nextRoot: Element) {
-      if (disposed) return;
-      const sequence = ++startSequence;
-      const beforeRead = broadcastRevision;
-      if (root !== nextRoot) {
-        stopObserving?.();
-        stopObserving = null;
-        root = nextRoot;
-      }
-      const reply = await input.client.send({
-        protocolVersion: 1,
-        requestId: input.requestId(),
-        type: 'GET_PUBLIC_STATUS',
-      });
-      if (disposed || sequence !== startSequence) return;
-      // Prefer a broadcast delivered during the read when both have the same generation.
-      if (
-        reply.type === 'PUBLIC_STATUS' &&
-        (beforeRead === broadcastRevision ||
-          reply.status.enablementGeneration > latestGeneration)
-      )
-        update(reply.status);
-      if (
-        !stopObserving &&
-        (reply.type === 'PUBLIC_STATUS' || beforeRead !== broadcastRevision)
-      )
-        activate();
-    },
-    routeChanged() {
-      restore();
-      stopObserving?.();
-      stopObserving = null;
-      activate();
-    },
+    start: readStatus,
     dispose() {
       if (disposed) return;
       disposed = true;
-      restore();
+      stopFeed();
       controller.abort();
       unsubscribe();
       input.adapter.dispose();
-      root = null;
     },
   };
 }

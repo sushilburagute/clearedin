@@ -32,6 +32,8 @@ export interface ObserverPorts {
 }
 
 export interface AdapterOptions {
+  /** Skip marked advertisements before reading or hashing their body. */
+  excludeSponsored?: boolean;
   /** Tests may inject observers/time/location; production defaults to the root's realm. */
   observers?: ObserverPorts;
   url?: () => URL;
@@ -250,6 +252,15 @@ export function createLinkedInAdapter(
       localSponsored: state.content.localSponsored,
     });
   }
+  function excludedSponsored(node: Element) {
+    if (!options.excludeSponsored) return false;
+    if (node.matches('[data-ad-id], [data-ad-tracking-id]')) return true;
+    for (const marker of node.querySelectorAll(SELECTORS.sponsored)) {
+      if (/\b(?:promoted|sponsored)\b/i.test(marker.textContent ?? ''))
+        return true;
+    }
+    return false;
+  }
   function refresh(node: Element): State | null {
     const old = states.get(node);
     if (!canRead(node)) {
@@ -259,6 +270,10 @@ export function createLinkedInAdapter(
     // Discover containers first. Read text and hash only after visibility/lookahead
     // confirmation; existing states still refresh to restore reused hidden nodes.
     if (!old && !visibleCandidates.has(node)) return null;
+    if (excludedSponsored(node)) {
+      if (old) remove(old);
+      return null;
+    }
     const content = extractPostContent(node);
     if (!content) {
       if (old) remove(old);
@@ -302,7 +317,7 @@ export function createLinkedInAdapter(
     void digest(content.digestInput)
       .then((contentDigest) => {
         if (!validRoute() || states.get(node) !== state) return;
-        if (!canRead(node)) {
+        if (!canRead(node) || excludedSponsored(node)) {
           remove(state);
           return;
         }

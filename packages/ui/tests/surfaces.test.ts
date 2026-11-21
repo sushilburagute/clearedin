@@ -295,6 +295,53 @@ describe('rendered extension surfaces (synthetic DOM)', () => {
     expect(credential.getAttribute('value') ?? '').toBe('');
   });
 
+  it('keeps sponsored posts out of live rules and consent tied to the saved recipient', async () => {
+    const session = createDemoSession();
+    const controller = createOptionsController(session.client, {
+      ...session.environment,
+      mode: 'connected',
+      credentialEntry: true,
+      providers: session.environment.providers.map((provider) => ({
+        ...provider,
+        label: provider.id,
+        retentionUrl: 'https://example.test/privacy',
+      })),
+    });
+    await act(async () =>
+      root.render(createElement(OptionsSurface, { controller })),
+    );
+    expect(document.querySelectorAll('.ci-category')).toHaveLength(11);
+    expect(document.body.textContent).toContain(
+      'Posts marked Sponsored or Promoted stay visible.',
+    );
+    expect(document.body.textContent).toContain(
+      'Classification thresholds are experimental',
+    );
+    expect(button('Enable filtering').disabled).toBe(true);
+
+    await act(async () => {
+      await controller.selectProvider('openai', 'SYNTHETIC-UI-ONLY');
+      await controller.requestPermission();
+      await controller.testConnection();
+    });
+    expect(button('Record consent').disabled).toBe(true);
+    const provider = document.querySelector<HTMLSelectElement>(
+      '#provider-title + p + form select',
+    )!;
+    Object.defineProperty(provider, 'value', {
+      configurable: true,
+      value: 'anthropic',
+    });
+    await act(async () =>
+      provider.dispatchEvent(new window.Event('change', { bubbles: true })),
+    );
+    expect(document.querySelector('#consent-title + p')?.textContent).toContain(
+      'openai receives',
+    );
+    expect(button('Record consent').disabled).toBe(true);
+    expect(button('Enable filtering').disabled).toBe(true);
+  });
+
   it('keeps the unavailable popup honest and opens settings without offering credentials', async () => {
     const openSettings = vi.fn();
     const controller = createPopupController(createUnavailableClient());
@@ -331,7 +378,7 @@ describe('rendered extension surfaces (synthetic DOM)', () => {
     expect(document.querySelector('[role="alert"]')).toBeNull();
   });
 
-  it('keeps provider and credential actions unavailable in the packaged default configuration', async () => {
+  it('keeps provider and credential actions unavailable when the runtime cannot connect', async () => {
     const controller = createOptionsController(
       createUnavailableClient(),
       UNAVAILABLE_ENVIRONMENT,

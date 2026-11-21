@@ -1,5 +1,11 @@
 # Verification record
 
+## November 21 opt-in extension checks
+
+- Chrome 157.0.8103.80 on Windows ran the packaged onboarding and home-feed workflow against offline fixtures. Two organic posts were collapsed, a sponsored post stayed visible, and pausing restored posts in two tabs. The test made one sample request and two classification requests to the loopback provider. [Archive hash, observations and reproduction steps](../experiments/browser-feasibility/evidence/chrome-feed-onboarding.md)
+- Firefox 160.0.1 on Windows ran two disposable-profile tests against the temporary ZIP with SHA-256 `989be92b386c7fd246084ca088041a4385d35e8b9c3c896ded4272f525db6b74`. The native dialog presented the selected provider origin, authentication information and website content permissions. Denial kept key entry disabled. After granting access and saving a dummy key, revoking either the host or the website-content permission cleared the key and disabled entry. Both profiles entered and exited the synthetic setup demo. The network observer recorded zero attempts to contact LinkedIn or a provider.
+- Both browsers saved a category change, retained it when reopening options and restored the defaults after confirmed reset. Live LinkedIn markup, paid provider responses and signed Firefox installation across a browser restart still need verification. [Release ledger](release/gates.json)
+
 ## November 20 development audit
 
 | Area | Verified in the development build |

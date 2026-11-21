@@ -72,7 +72,7 @@ export function Frame({
             <p>
               Development preview. Independent of LinkedIn.
               <br />
-              Live filtering and store installation are unavailable.
+              The website uses sample posts. Store listings are pending.
             </p>
           </div>
           <nav aria-label="More information">

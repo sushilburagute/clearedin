@@ -1,6 +1,6 @@
 # ClearedIn
 
-ClearedIn is a development preview for a user-controlled LinkedIn home-feed filter. The Chrome and Firefox extensions save category rules and usage limits locally. The website demonstrates all 12 categories on 14 synthetic posts. **Live filtering and provider connections are disabled.**
+ClearedIn is a development preview for a user-controlled LinkedIn home-feed filter. In desktop Chrome or Firefox, open the extension settings, select a provider, grant access, enter your own session key, and test the connection with a sample. Choose which categories to hide or protect, review the data disclosure and enable filtering. The extension leaves identified sponsored posts visible. The [website demo](https://clearedin.sush.dev/demo/) uses 14 synthetic posts and works without a key. Store listings and classifier quality acceptance are pending.
 
 ## Run locally
 

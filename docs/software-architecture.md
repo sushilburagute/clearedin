@@ -1,6 +1,6 @@
 # Architecture and feed rules
 
-The WXT/React extension and Astro website share a TypeScript workspace. The shipping extension runs a settings broker and an inert content script. The feed adapter, coordinator, and provider adapters are implemented and exercised with synthetic inputs. Connecting them to a real feed requires the decisions in the [release ledger](release/gates.json).
+The WXT/React extension and Astro website share a TypeScript workspace. In the extension, a top-frame content script observes the desktop home feed after setup and opt-in. A privileged background broker owns settings, session keys, consent and provider requests. The standalone website uses synthetic inputs. The [release ledger](release/gates.json) tracks public distribution.
 
 | Change | Start here |
 | --- | --- |
@@ -16,7 +16,7 @@ The WXT/React extension and Astro website share a TypeScript workspace. The ship
 1. The adapter reads visible post text on the desktop home feed. It associates each node with an identity, content digest, and generation so a late reply cannot hide a recycled post. An explicit visible Sponsored or Promoted disclosure supplies the local sponsored signal.
 2. The coordinator checks enablement, consent, provider, and generation. Complete text can use a cached classification or share a pending request. Cache keys include the content digest, extraction and extractor version, taxonomy, prompt, provider, model, and adapter version.
 3. A provider labels content. Local policy decides whether to collapse it. All categories start at **Show normally**. A qualifying **Always show** match wins over **Hide**. For example, a technical product launch stays visible when launches are hidden and technical content is protected.
-4. Leave the post visible on pause, missing consent, an unsupported route, stale identity, unhealthy extraction, or a user reveal. Partial text, abstention, and invalid results supply no remote evidence. A reliable local sponsored disclosure can still qualify under the same precedence rules. Keep the post visible while a possible protection match is pending.
+4. Leave the post visible on pause, missing consent, an unsupported route, stale identity, unhealthy extraction, or a user reveal. Partial text, abstention, and invalid results supply no remote evidence. In the installed extension, a recognized sponsored disclosure excludes the post before classification. Eligible posts use experimental thresholds for the selected model. Keep the post visible while a classification is pending.
 5. Changing preferences reuses available classifications. Reveal restores the original post for the page session. Pause or teardown cancels obsolete subscriptions, restores host markup, and removes placeholders and announcements.
 
 ## Storage and limits

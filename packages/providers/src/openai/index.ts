@@ -8,20 +8,21 @@ import {
   type PublicError,
 } from '@clearedin/contracts';
 import { buildClassificationPrompt } from '@clearedin/taxonomy';
+import { PROVIDER_CATALOG } from '../catalog';
 
 export const OPENAI_CAPABILITIES = Object.freeze({
   provider: 'openai',
-  model: 'gpt-5.6-terra',
+  model: PROVIDER_CATALOG.openai.model,
   adapterVersion: '1.0.0',
   api: 'Responses v1',
-  endpoint: 'https://api.openai.com/v1/responses',
+  endpoint: PROVIDER_CATALOG.openai.endpoint,
   hostPermissions: ['https://api.openai.com/*'],
   scoreKind: 'self_reported',
   verifiedOn: '2026-11-16',
   live: 'untested',
   browser: 'untested',
   clientKeySecurity:
-    'Direct browser keys conflict with OpenAI key-safety guidance; production enablement is gated.',
+    'OpenAI recommends server-side keys. A user-supplied browser-session key is accessible to privileged extension contexts.',
   pricing: {
     currency: 'USD',
     unit: 'million_tokens',
