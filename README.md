@@ -13,6 +13,12 @@ pnpm --filter @clearedin/website dev
 
 For the extension, run `pnpm --filter @clearedin/extension dev` for Chrome or `pnpm --filter @clearedin/extension dev:firefox` for Firefox. Development and fixture tests require no API key. If your shell has a different Node version, prefix pnpm commands with `npx --yes --package=node@24.22.3 --package=pnpm@12.4.1`.
 
+## Deploy the website to Vercel
+
+Import the repository with **Root Directory** set to `apps/website` and leave **Include source files outside of the Root Directory in the Build Step** enabled so Astro can read the shared workspace packages and lockfile. The [Vercel configuration](apps/website/vercel.json) builds the static site with the pinned pnpm version. It skips install lifecycle scripts because the root `prepare` script generates browser extension files. The static demo needs no environment variables or API keys.
+
+The deployment keeps the preview's `noindex` and security headers and gives Astro's fingerprinted assets a one-year browser cache. When changing the workspace pnpm version, update both commands in `apps/website/vercel.json` as well.
+
 ## Commands
 
 | Command                                            | Purpose                                                                          |

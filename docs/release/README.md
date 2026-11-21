@@ -27,7 +27,7 @@ The browser archives are under `apps/extension/.output/`. The static site is in 
 
 ## Deployment and incidents
 
-Publish only the reviewed static build when the host, domain, support contact, and listings are approved. Apply `apps/website/public/_headers` or equivalent host settings, then check HTTPS, CSP, links, and preview noindex on the deployed site. Retain the previous static artifact for rollback.
+Publish only the reviewed static build when the host, domain, support contact, and listings are approved. On Vercel, `apps/website/vercel.json` applies the preview headers. For other hosts, apply `apps/website/public/_headers` or equivalent host settings. Check HTTPS, CSP, links, and preview noindex on the deployed site. Retain the previous static artifact for rollback.
 
 | Incident | Immediate action and recovery |
 | --- | --- |

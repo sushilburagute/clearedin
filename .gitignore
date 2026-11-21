@@ -3,6 +3,7 @@ dist/
 .output/
 .wxt/
 .astro/
+.vercel/
 coverage/
 *.tsbuildinfo
 .env
