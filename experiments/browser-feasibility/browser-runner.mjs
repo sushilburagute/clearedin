@@ -1,7 +1,14 @@
 // Dependency-free test drivers for isolated profiles, never the user's profile.
 import { spawn } from 'node:child_process';
 import { Buffer } from 'node:buffer';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,14 +16,16 @@ import { createConnection } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startFixtureServer } from './serve.mjs';
 import { checkSettings } from './settings-check.mjs';
+import { prepareUpgrade } from './upgrade-fixture.mjs';
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const family = process.argv[2];
-const settingsCheck = process.argv.includes('--settings');
+const upgradeCheck = process.argv.includes('--upgrade');
+const settingsCheck = upgradeCheck || process.argv.includes('--settings');
 if (!['chrome', 'firefox'].includes(family))
   throw new Error('Specify chrome or firefox');
 const binary =
-  process.argv.slice(3).find((arg) => arg !== '--settings') ??
+  process.argv.slice(3).find((arg) => !arg.startsWith('--')) ??
   (family === 'chrome'
     ? 'C:/Program Files/Google/Chrome/Application/chrome.exe'
     : 'C:/Program Files/Mozilla Firefox/firefox.exe');
@@ -33,6 +42,7 @@ const results = {
   checks: [],
   pending: [],
 };
+let upgrade;
 function check(name, passed, detail) {
   results.checks.push({
     name,
@@ -179,7 +189,7 @@ async function chrome() {
   try {
     await start();
     const loaded = await client.send('Extensions.loadUnpacked', {
-      path: output,
+      path: upgrade?.unpacked ?? output,
     });
     const id = loaded.id;
     check('packaged WXT extension loaded', Boolean(id));
@@ -193,7 +203,52 @@ async function chrome() {
         },
         until,
         check,
+        upgrade &&
+          (async () => {
+            check(
+              'installed baseline version',
+              (await tab.evaluate('chrome.runtime.getManifest().version')) ===
+                upgrade.evidence.from,
+            );
+            await tab.close();
+            tab = undefined;
+            const updated = await client.send('Extensions.loadUnpacked', {
+              path: await upgrade.update(),
+            });
+            check('same Chrome extension ID', updated.id === id);
+            tab = await page(`chrome-extension://${id}/options.html`);
+            await until(
+              async () =>
+                (await tab.evaluate('chrome.runtime.getManifest().version')) ===
+                upgrade.evidence.to,
+              'updated Chrome manifest',
+            );
+            check('higher manifest version running', true);
+          }),
       );
+      if (process.argv.includes('--store-screenshot')) {
+        await tab.send('Emulation.setDeviceMetricsOverride', {
+          width: 1280,
+          height: 800,
+          deviceScaleFactor: 1,
+          mobile: false,
+        });
+        await tab.evaluate(
+          "document.getElementById('categories-title').closest('section').scrollIntoView()",
+        );
+        await tab.evaluate(
+          'document.fonts.ready.then(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))',
+        );
+        const { data } = await tab.send('Page.captureScreenshot', {
+          format: 'png',
+        });
+        const folder = resolve(directory, 'results');
+        await mkdir(folder, { recursive: true });
+        await writeFile(
+          resolve(folder, 'options-1280x800.png'),
+          Buffer.from(data, 'base64'),
+        );
+      }
       return;
     }
     let options = await page(`chrome-extension://${id}/options.html`);
@@ -479,6 +534,29 @@ async function firefox() {
         },
         until,
         check,
+        upgrade &&
+          (async () => {
+            await navigate('about:blank');
+            await send('Marionette:SetContext', { value: 'chrome' });
+            const version = `return ChromeUtils.importESModule('resource://gre/modules/ExtensionParent.sys.mjs').ExtensionParent.GlobalManager.getExtension(${JSON.stringify(extensionId)}).manifest.version;`;
+            check(
+              'installed baseline version',
+              (await evaluate(version)) === upgrade.evidence.from,
+            );
+            await send('Addon:Install', {
+              path: await upgrade.update(),
+              temporary: true,
+            });
+            await until(
+              async () => (await evaluate(version)) === upgrade.evidence.to,
+              'updated Firefox manifest for same ID',
+            );
+            check(
+              'same Firefox extension ID running higher manifest version',
+              true,
+            );
+            await send('Marionette:SetContext', { value: 'content' });
+          }),
       );
       return;
     }
@@ -601,6 +679,22 @@ async function firefox() {
 
 let server;
 try {
+  if (upgradeCheck) {
+    const archives = (await readdir(outputDirectory)).filter((name) =>
+      name.endsWith(`-${family}.zip`),
+    );
+    if (archives.length !== 1)
+      throw new Error(
+        'Build one package for this browser before the upgrade smoke',
+      );
+    upgrade = await prepareUpgrade(
+      profile,
+      resolve(outputDirectory, archives[0]),
+      family,
+    );
+    results.upgrade = upgrade.evidence;
+    delete results.profile;
+  }
   if (!settingsCheck) server = await startFixtureServer();
   await (family === 'chrome' ? chrome() : firefox());
   if (!settingsCheck)
@@ -618,10 +712,12 @@ try {
     resolve(
       directory,
       'results',
-      `${family}${settingsCheck ? '-settings' : ''}.json`,
+      `${family}${upgradeCheck ? '-upgrade' : settingsCheck ? '-settings' : ''}.json`,
     ),
     JSON.stringify(results, null, 2) + '\n',
   );
+  if (upgradeCheck)
+    await rm(profile, { recursive: true, force: true, maxRetries: 3 });
   if (results.checks.some((item) => !item.passed)) process.exitCode = 1;
   else if (!process.exitCode && results.pending.length) process.exitCode = 2;
 }

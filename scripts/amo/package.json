@@ -1,0 +1,8 @@
+{
+  "name": "clearedin-amo-validation",
+  "private": true,
+  "packageManager": "pnpm@12.4.1",
+  "dependencies": {
+    "addons-linter": "10.16.0"
+  }
+}

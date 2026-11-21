@@ -1,0 +1,45 @@
+{
+  "family": "firefox",
+  "timestamp": "2026-11-21T04:47:32.711Z",
+  "checks": [
+    {
+      "name": "packaged WXT ZIP temporary add-on loaded",
+      "passed": true
+    },
+    {
+      "name": "default category shows normally",
+      "passed": true
+    },
+    {
+      "name": "credential entry is unavailable in the development build",
+      "passed": true
+    },
+    {
+      "name": "saved rule survives reopening settings",
+      "passed": true
+    },
+    {
+      "name": "installed baseline version",
+      "passed": true
+    },
+    {
+      "name": "same Firefox extension ID running higher manifest version",
+      "passed": true
+    },
+    {
+      "name": "saved rule survives same-ID higher-version update",
+      "passed": true
+    },
+    {
+      "name": "confirmed reset persists across reopening",
+      "passed": true
+    }
+  ],
+  "pending": [],
+  "upgrade": {
+    "from": "0.1.0",
+    "to": "0.1.1",
+    "sourceZipSha256": "1188c149f4f970246438f54de2d25d6cde201949d4321822ccf738f1b0d06f3d"
+  },
+  "version": "160.0.1"
+}

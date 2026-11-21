@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'wxt';
 
 // WXT forwards these to unimport/unplugin, but its public type omits the
@@ -12,12 +13,23 @@ export default defineConfig({
   imports: explicitImports,
   vite: () => ({
     resolve: {
-      alias: {
-        'wxt/browser': createRequire(import.meta.url).resolve('wxt/browser'),
-      },
+      alias: [
+        {
+          find: 'wxt/browser',
+          replacement: createRequire(import.meta.url).resolve('wxt/browser'),
+        },
+        {
+          find: /^zod$/,
+          replacement: fileURLToPath(
+            new URL('./build/zod-csp.ts', import.meta.url),
+          ),
+        },
+      ],
     },
   }),
   manifestVersion: 3,
+  // release:prepare archives the whole workspace from the reviewed Git tree.
+  zip: { zipSources: false },
   manifest: ({ browser }) => ({
     name: 'ClearedIn Development',
     description:

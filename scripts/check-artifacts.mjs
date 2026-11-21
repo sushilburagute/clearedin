@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import { resolve, relative } from 'node:path';
-import { inflateRawSync } from 'node:zlib';
+import { zipEntries } from './release-zip.mjs';
 
 async function filesUnder(root) {
   const entries = await readdir(root, { withFileTypes: true });
@@ -13,52 +13,6 @@ async function filesUnder(root) {
       }),
     )
   ).flat();
-}
-
-// Read generated ZIP central directories, then compare uncompressed bytes to the
-// inspected build. No extraction or path writes. ZIP64/encrypted files fail closed.
-function zipEntries(bytes) {
-  let end = bytes.length - 22;
-  while (
-    end >= Math.max(0, bytes.length - 65557) &&
-    bytes.readUInt32LE(end) !== 0x06054b50
-  )
-    end--;
-  assert(end >= 0, 'ZIP end record missing');
-  const count = bytes.readUInt16LE(end + 10);
-  assert(count !== 0xffff, 'ZIP64 is unsupported by this audit');
-  let cursor = bytes.readUInt32LE(end + 16);
-  const entries = new Map();
-  for (let index = 0; index < count; index++) {
-    assert.equal(bytes.readUInt32LE(cursor), 0x02014b50);
-    assert.equal(bytes.readUInt16LE(cursor + 8) & 1, 0, 'Encrypted ZIP');
-    const method = bytes.readUInt16LE(cursor + 10);
-    const size = bytes.readUInt32LE(cursor + 20);
-    const nameLength = bytes.readUInt16LE(cursor + 28);
-    const extraLength = bytes.readUInt16LE(cursor + 30);
-    const commentLength = bytes.readUInt16LE(cursor + 32);
-    const offset = bytes.readUInt32LE(cursor + 42);
-    const name = bytes
-      .subarray(cursor + 46, cursor + 46 + nameLength)
-      .toString('utf8');
-    assert(!entries.has(name), `Duplicate ZIP path ${name}`);
-    assert(
-      !name.startsWith('/') && !name.split('/').includes('..'),
-      'Unsafe ZIP path',
-    );
-    assert.equal(bytes.readUInt32LE(offset), 0x04034b50);
-    const start =
-      offset +
-      30 +
-      bytes.readUInt16LE(offset + 26) +
-      bytes.readUInt16LE(offset + 28);
-    const compressed = bytes.subarray(start, start + size);
-    assert(method === 0 || method === 8, 'Unsupported ZIP compression');
-    if (!name.endsWith('/'))
-      entries.set(name, method === 8 ? inflateRawSync(compressed) : compressed);
-    cursor += 46 + nameLength + extraLength + commentLength;
-  }
-  return entries;
 }
 
 const output = resolve('apps/extension/.output');
