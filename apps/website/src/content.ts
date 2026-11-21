@@ -32,7 +32,7 @@ export const pages = [
       {
         title: 'What you can try today',
         paragraphs: [
-          'Explore all 12 categories on 14 sample posts in the full demo. Filtering your own LinkedIn feed will require the browser extension, which is still in development.',
+          'Explore all 12 categories on 14 sample posts in the full demo. To use rules on your desktop LinkedIn home feed, build the development extension and connect your provider.',
         ],
       },
     ],
@@ -41,7 +41,7 @@ export const pages = [
     slug: 'install',
     title: 'Build the development extension',
     description:
-      'Build and load the development extension for desktop Chrome or Firefox.',
+      'The Chrome Web Store and Firefox Add-ons listings are pending. You can build and load the development preview on either desktop browser.',
     sections: [
       {
         title: 'Build the extension',
@@ -72,7 +72,7 @@ export const pages = [
   },
   {
     slug: 'setup',
-    title: 'Does the demo need a provider?',
+    title: 'Connect your provider',
     description:
       'The website demo works without an account or API key. Learn how to connect your provider in the development extension.',
     sections: [
@@ -144,7 +144,7 @@ export const pages = [
       {
         title: 'Does it filter my LinkedIn feed today?',
         paragraphs: [
-          'The website filters sample posts. Your LinkedIn feed stays as it is. The extension for live filtering is still in development.',
+          'The website uses fictional posts. To filter your own desktop LinkedIn home feed, build the development extension, connect your provider, review the disclosure and enable filtering.',
         ],
       },
       {
@@ -184,6 +184,12 @@ export const pages = [
     title: 'Development changelog',
     description: 'Local features and the remaining release boundaries.',
     sections: [
+      {
+        title: 'Opt-in home-feed filtering · 21 November 2026',
+        paragraphs: [
+          'The development extension can use your selected provider after setup and consent. Packaged Chrome checks on fictional posts verified that pausing restores hidden posts and that recognized sponsored posts stay visible. Live LinkedIn compatibility and classifier quality still need verification.',
+        ],
+      },
       {
         title: '0.1.0 development preview · 17 November 2026',
         paragraphs: [

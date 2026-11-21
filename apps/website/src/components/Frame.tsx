@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { Icon } from './Icon';
 
 export const guides = [
   ['how-it-works', 'How it works'],
@@ -13,9 +12,7 @@ export const guides = [
 export function Brand() {
   return (
     <a className="brand" href="/" aria-label="ClearedIn home">
-      <span className="brand-mark">
-        <Icon name="layers" size={24} />
-      </span>
+      <img src="/mark.svg" alt="" width="34" height="34" />
       ClearedIn
     </a>
   );
@@ -29,9 +26,9 @@ export function Frame({
   children: ReactNode;
 }) {
   const links = [
-    ['/demo/', 'Full demo'],
     ['/how-it-works/', 'How it works'],
-    ['/support/', 'Support'],
+    ['/install/', 'Extension'],
+    ['/privacy/', 'Privacy'],
   ] as const;
   return (
     <>
@@ -52,8 +49,12 @@ export function Frame({
               </a>
             ))}
           </nav>
-          <a href="/#studio" className="btn btn-blue header-action">
-            Sample feed
+          <a
+            href="/demo/"
+            className="btn btn-primary header-action"
+            aria-current={path === '/demo/' ? 'page' : undefined}
+          >
+            Full demo
           </a>
         </div>
       </header>
