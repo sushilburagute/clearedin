@@ -26,7 +26,7 @@ jobs:
       - run: pnpm test:integration
       - name: Check preview and production website output
         run: |
-          for environment in production preview; do
+          for environment in preview production; do
             export VERCEL_ENV="$environment"
             pnpm --filter @clearedin/website build
             pnpm site:check
