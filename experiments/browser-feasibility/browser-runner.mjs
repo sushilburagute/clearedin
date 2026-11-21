@@ -440,11 +440,10 @@ async function marionette(port) {
 }
 
 async function firefox() {
-  const port = 28765;
   await writeFile(
     resolve(profile, 'user.js'),
     [
-      'user_pref("marionette.port", 28765);',
+      'user_pref("marionette.port", 0);',
       'user_pref("browser.shell.checkDefaultBrowser", false);',
       'user_pref("browser.aboutwelcome.enabled", false);',
     ].join('\n'),
@@ -470,7 +469,12 @@ async function firefox() {
       '--profile',
       profile,
     ]);
-    client = await until(() => marionette(port), 'Firefox Marionette');
+    client = await until(async () => {
+      const port = Number(
+        await readFile(resolve(profile, 'MarionetteActivePort'), 'utf8'),
+      );
+      return port && marionette(port);
+    }, 'Firefox Marionette in disposable profile');
     const session = await send('WebDriver:NewSession', {
       capabilities: { alwaysMatch: {} },
     });

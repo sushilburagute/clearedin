@@ -33,9 +33,18 @@ jobs:
       - run: pnpm release:prepare
       - run: pnpm release:verify
       - run: pnpm release:amo
+      - run: node experiments/browser-feasibility/browser-runner.mjs chrome google-chrome --upgrade
+      - run: node experiments/browser-feasibility/browser-runner.mjs firefox firefox --upgrade
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-upgrade-evidence
+          path: experiments/browser-feasibility/results/*-upgrade.json
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: development-review-bundle
           path: .release/
-      # Local integration is synthetic; packaged-browser/manual release gates remain separate.
+          include-hidden-files: true
+          if-no-files-found: error
+      # Signed store delivery and human acceptance are separate release gates.
       # No deployment, signing, provider secrets, or publishing in this workflow.

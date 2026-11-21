@@ -1,6 +1,6 @@
 {
   "family": "firefox",
-  "timestamp": "2026-11-21T04:47:32.711Z",
+  "timestamp": "2026-11-21T04:52:04.680Z",
   "checks": [
     {
       "name": "packaged WXT ZIP temporary add-on loaded",
