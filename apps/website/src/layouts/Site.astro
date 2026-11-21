@@ -30,7 +30,12 @@ const html = renderToString(
       <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
     )}
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#0a66c2" />
+    <meta
+      name="theme-color"
+      content="#151517"
+      media="(prefers-color-scheme: dark)"
+    />
+    <meta name="theme-color" content="#f5f5f7" />
     <link rel="icon" href="/mark.svg" type="image/svg+xml" />
     <title>{title} | ClearedIn</title>
   </head>

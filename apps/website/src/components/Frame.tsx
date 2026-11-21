@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Icon, type IconName } from './Icon';
+import { Icon } from './Icon';
 
 export const guides = [
   ['how-it-works', 'How it works'],
@@ -28,11 +28,12 @@ export function Frame({
   path: string;
   children: ReactNode;
 }) {
-  const links: [string, string, IconName][] = [
-    ['/', 'Feed studio', 'feed'],
-    ['/how-it-works/', 'How it works', 'book'],
-    ['/support/', 'Support', 'help'],
-  ];
+  const links = [
+    ['/', 'Feed studio'],
+    ['/demo/', 'Full demo'],
+    ['/how-it-works/', 'How it works'],
+    ['/support/', 'Support'],
+  ] as const;
   return (
     <>
       <a className="skip" href="#main">
@@ -42,19 +43,22 @@ export function Frame({
         <div className="container header-inner">
           <Brand />
           <nav aria-label="Main navigation">
-            {links.map(([href, label, icon]) => (
+            {links.map(([href, label]) => (
               <a
                 key={href}
                 href={href}
                 aria-current={path === href ? 'page' : undefined}
               >
-                <Icon name={icon} size={18} />
                 {label}
               </a>
             ))}
           </nav>
-          <a href="/demo/" className="btn btn-blue header-action">
-            Full demo <Icon name="arrow" size={16} />
+          <a
+            href="/install/"
+            className="btn btn-outline header-action"
+            aria-current={path === '/install/' ? 'page' : undefined}
+          >
+            Get extension
           </a>
         </div>
       </header>

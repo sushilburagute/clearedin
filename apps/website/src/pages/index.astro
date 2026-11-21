@@ -1,13 +1,12 @@
 ---
-import { createElement, Fragment as ReactFragment } from 'react';
+import { createElement } from 'react';
 import Site from '../layouts/Site.astro';
-import { StudioHero, Studio, type StudioProps } from '../components/Studio';
+import { Studio, type StudioProps } from '../components/Studio';
 import { CATEGORY_DEFINITION_BY_ID } from '@clearedin/taxonomy';
 import { SYNTHETIC_FIXTURES } from '@clearedin/test-fixtures/fake-classifier';
 import { buildDemoPolicies } from '../demo-policy';
 const policies = await buildDemoPolicies();
 const samples = [
-  ['engagement-bait', 'engagement_bait', 'chat', 'Leo Park', 'Growth marketer'],
   [
     'job-referral',
     'job_posting',
@@ -15,6 +14,7 @@ const samples = [
     'Mira Shah',
     'Engineering manager',
   ],
+  ['engagement-bait', 'engagement_bait', 'chat', 'Leo Park', 'Growth marketer'],
   [
     'technical-launch',
     'technical_content',
@@ -46,14 +46,9 @@ const props: StudioProps = {
   })),
 };
 const page = createElement(
-  ReactFragment,
-  null,
-  createElement(StudioHero),
-  createElement(
-    'div',
-    { id: 'studio-root', 'data-studio': JSON.stringify(props) },
-    createElement(Studio, props),
-  ),
+  'div',
+  { id: 'studio-root', 'data-studio': JSON.stringify(props) },
+  createElement(Studio, props),
 );
 ---
 

@@ -22,10 +22,26 @@ export function Guide({ page }: { page: (typeof pages)[number] }) {
           ))}
         </nav>
       </aside>
-      <article className="guide panel">
-        <div className="guide-intro">
+      <article className="guide">
+        <div className="guide-intro tile">
           <h1>{page.title}</h1>
           <p>{page.description}</p>
+          {page.slug === 'install' && (
+            <div className="guide-actions">
+              <a
+                className="btn btn-blue"
+                href="https://github.com/sushilburagute/clearedin/tree/main/apps/extension"
+              >
+                View extension source
+              </a>
+              <a
+                className="btn btn-outline"
+                href="https://github.com/sushilburagute/clearedin/archive/refs/heads/main.zip"
+              >
+                Download source ZIP
+              </a>
+            </div>
+          )}
           {(faq || page.slug === 'privacy') && (
             <p>
               {faq ? 'For help, email ' : 'For privacy questions, email '}
@@ -38,14 +54,14 @@ export function Guide({ page }: { page: (typeof pages)[number] }) {
         <div className="guide-sections">
           {page.sections.map((section) =>
             faq ? (
-              <details key={section.title}>
+              <details className="panel" key={section.title}>
                 <summary>{section.title}</summary>
                 {section.paragraphs.map((p) => (
                   <p key={p}>{p}</p>
                 ))}
               </details>
             ) : (
-              <section key={section.title}>
+              <section className="panel" key={section.title}>
                 <h2>{section.title}</h2>
                 {section.paragraphs.map((p) => (
                   <p key={p}>{p}</p>
@@ -55,7 +71,7 @@ export function Guide({ page }: { page: (typeof pages)[number] }) {
           )}
         </div>
         <a className="btn btn-blue" href="/demo/">
-          Try the full demo <Icon name="arrow" size={16} />
+          Try the full demo
         </a>
       </article>
     </div>
@@ -63,12 +79,11 @@ export function Guide({ page }: { page: (typeof pages)[number] }) {
 }
 export function MissingPage() {
   return (
-    <div className="missing panel">
-      <span className="overline">404</span>
+    <div className="missing tile">
       <h1>Page not found</h1>
       <p>Return to the feed studio to explore the sample feed and its rules.</p>
       <a className="btn btn-blue" href="/">
-        Back to feed studio <Icon name="arrow" size={16} />
+        Back to feed studio
       </a>
     </div>
   );

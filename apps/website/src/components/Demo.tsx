@@ -22,11 +22,7 @@ export function Demo({
   ];
   return (
     <div className="full-demo">
-      <header className="demo-intro">
-        <p className="overline">
-          <Icon name="sliders" size={16} />
-          Full demo
-        </p>
+      <header className="demo-intro tile">
         <h1>Build your feed rules.</h1>
         <p>
           Set Job postings to Hide, then protect Referrals with Always show.
@@ -126,7 +122,7 @@ export function Demo({
             </div>
           ))}
           <a className="all-rules" href="#demo-feed">
-            View sample feed <Icon name="arrow" size={16} />
+            View sample feed
           </a>
         </section>
       </div>

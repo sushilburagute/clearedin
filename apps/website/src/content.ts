@@ -39,26 +39,33 @@ export const pages = [
   },
   {
     slug: 'install',
-    title: 'Try ClearedIn in your browser',
+    title: 'Get the ClearedIn extension',
     description:
-      'The sample feed works here without installation. The Chrome and Firefox extensions are still in development.',
+      'Build and load the development extension for desktop Chrome or Firefox.',
     sections: [
       {
-        title: 'Chrome Web Store',
+        title: 'Build the extension',
         paragraphs: [
-          'We’ll link to the Chrome extension here once its store listing is available.',
+          'Download or clone the repository. With Node 24.22.3 and pnpm 12.4.1, run pnpm install --frozen-lockfile in the repository folder.',
+          'Run pnpm package:chrome for Chrome or pnpm package:firefox for Firefox. The builds are written to apps/extension/.output/.',
         ],
       },
       {
-        title: 'Firefox Add-ons',
+        title: 'Load in Chrome',
         paragraphs: [
-          'We’ll add the Firefox installation link here when Mozilla approves the listing.',
+          'Open chrome://extensions and turn on Developer mode. Choose Load unpacked and select the apps/extension/.output/chrome-mv3 folder.',
         ],
       },
       {
-        title: 'For repository contributors',
+        title: 'Load in Firefox',
         paragraphs: [
-          'Use the repository README to install its pinned toolchain, run checks, and generate separate Chrome and Firefox development packages. The options page saves category preferences locally and offers a separate synthetic UI demo. Live filtering and credentials remain unavailable.',
+          'Open about:debugging and select This Firefox. Choose Load Temporary Add-on and select manifest.json inside apps/extension/.output/firefox-mv3. Firefox removes the temporary add-on on restart.',
+        ],
+      },
+      {
+        title: 'What the development build does',
+        paragraphs: [
+          'Try the sample demo from the extension’s options page and save category preferences locally. Live filtering and provider connections are disabled. Chrome Web Store and Firefox Add-ons listings are pending.',
         ],
       },
     ],
