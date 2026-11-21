@@ -482,6 +482,12 @@ svg {
   background: #f9ebd8;
   color: #82561e;
 }
+.post .post-avatar {
+  flex: none;
+  border-radius: 50%;
+  font-weight: 680;
+  font-size: 0.9rem;
+}
 .post-kind {
   display: flex;
   align-items: center;
@@ -547,24 +553,20 @@ svg {
   line-height: 1.13;
   font-weight: 610;
 }
-.post-bottom,
-.hidden-row {
+.post-bottom {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 4px 12px;
-  padding: 2px 22px;
+  padding: 6px 22px;
   border-top: 1px solid var(--line);
   font-size: 0.8rem;
 }
-.post-bottom span,
-.post-bottom a {
+.post-bottom a,
+.post-action,
+.hidden-reason {
   display: flex;
   align-items: center;
   gap: 7px;
-}
-.post-bottom span,
-.hidden-row span {
-  color: var(--muted);
 }
 .post-bottom a,
 .link,
@@ -579,14 +581,29 @@ svg {
 .all-rules:hover {
   text-decoration: underline;
 }
-.collapsed .post-top {
-  padding-bottom: 15px;
-}
 .link {
   background: none;
   border: 0;
   padding: 5px 0;
   font-size: inherit;
+}
+.post-bottom a {
+  color: var(--muted);
+  font-weight: 500;
+}
+.post-action {
+  padding-inline: 12px;
+  border-radius: 6px;
+  background: var(--soft);
+}
+.hidden-row {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 12px;
+  padding: 4px 22px;
+  background: var(--canvas);
+  color: var(--muted);
+  font-size: 0.84rem;
 }
 .quick,
 .demo-controls {

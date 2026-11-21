@@ -22,14 +22,14 @@ interface SyntheticFixture {
 const seed = [
   {
     id: 'job-referral',
-    text: '[Synthetic example] We are hiring engineers, and I can refer applicants.',
+    text: '[Synthetic example] We’re hiring a backend engineer to help move our reporting jobs off the main database. If you’ve untangled a slow query and enjoyed it, I’d love to hear how you did it. Happy to make a referral.',
     extraction: 'complete',
     categories: ['job_posting', 'referral'],
     abstention: null,
   },
   {
     id: 'technical-launch',
-    text: '[Synthetic example] Our compiler is available today. Its persistent syntax tree cuts reparsing work; here are the benchmarks.',
+    text: '[Synthetic example] We shipped the new compiler today. A one-line edit used to make us parse the whole file again. The parser now reuses the untouched branches of the syntax tree. That made the biggest difference on long files with tiny edits.',
     extraction: 'complete',
     categories: ['product_launch', 'technical_content'],
     abstention: null,
@@ -43,7 +43,7 @@ const seed = [
   },
   {
     id: 'engagement-bait',
-    text: '[Synthetic example] Comment YES and I will send you my secret growth formula.',
+    text: '[Synthetic example] I put the exact opening lines from my five best-performing posts into a swipe file. Want a copy? Comment “HOOKS” below and I’ll DM it to you.',
     extraction: 'complete',
     categories: ['engagement_bait'],
     abstention: null,
