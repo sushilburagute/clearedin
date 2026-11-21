@@ -12,22 +12,6 @@ export function Guide({
   const faq = page.slug === 'support';
   return (
     <div className="guide-layout">
-      <aside className="guide-menu panel">
-        <h2>
-          <Icon name="book" /> Guides & support
-        </h2>
-        <nav aria-label="Guide pages">
-          {guides.map(([slug, label]) => (
-            <a
-              href={'/' + slug + '/'}
-              key={slug}
-              aria-current={slug === page.slug ? 'page' : undefined}
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
-      </aside>
       <article className="guide">
         <div className="guide-intro tile">
           <h1>{page.title}</h1>
@@ -35,7 +19,7 @@ export function Guide({
           {page.slug === 'install' && (
             <div className="guide-actions">
               <a
-                className="btn btn-blue"
+                className="btn btn-primary"
                 href="https://github.com/sushilburagute/clearedin/tree/main/apps/extension"
               >
                 View extension source
@@ -113,10 +97,32 @@ export function Guide({
             ),
           )}
         </div>
-        <a className="btn btn-blue" href="/#studio">
-          Try the sample feed
-        </a>
+        {page.slug === 'install' ? (
+          <a className="btn btn-primary" href="/setup/">
+            Continue to provider setup
+          </a>
+        ) : (
+          <a className="btn btn-primary" href="/demo/">
+            Try the full demo
+          </a>
+        )}
       </article>
+      <aside className="guide-menu panel">
+        <h2>
+          <Icon name="book" /> Guides & support
+        </h2>
+        <nav aria-label="Guide pages">
+          {guides.map(([slug, label]) => (
+            <a
+              href={'/' + slug + '/'}
+              key={slug}
+              aria-current={slug === page.slug ? 'page' : undefined}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+      </aside>
     </div>
   );
 }
@@ -125,7 +131,7 @@ export function MissingPage() {
     <div className="missing tile">
       <h1>Page not found</h1>
       <p>Return to the feed studio to explore the sample feed and its rules.</p>
-      <a className="btn btn-blue" href="/#studio">
+      <a className="btn btn-primary" href="/#studio">
         Back to sample feed
       </a>
     </div>

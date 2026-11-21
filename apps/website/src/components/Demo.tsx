@@ -1,17 +1,46 @@
-import { CATEGORY_DEFINITIONS } from '@clearedin/taxonomy';
+import {
+  CATEGORY_DEFINITIONS,
+  type CategoryDefinition,
+} from '@clearedin/taxonomy';
 import { SYNTHETIC_FIXTURES } from '@clearedin/test-fixtures/fake-classifier';
 import { Icon } from './Icon';
 import type { DemoPolicy } from '../demo-policy';
+
+function CategoryRule({ category }: { category: CategoryDefinition }) {
+  return (
+    <div className="quick-rule">
+      <label htmlFor={'rule-' + category.id}>{category.label}</label>
+      <select
+        id={'rule-' + category.id}
+        data-category={category.id}
+        aria-describedby={'help-' + category.id}
+        disabled
+      >
+        <option value="show">Show normally</option>
+        <option value="hide">Hide</option>
+        <option value="always_show">Always show</option>
+      </select>
+      <small id={'help-' + category.id}>{category.definition}</small>
+    </div>
+  );
+}
 
 export function Demo({
   policies,
 }: {
   policies: ReadonlyMap<string, DemoPolicy>;
 }) {
+  const isIntroRule = ({ id }: CategoryDefinition) =>
+    id === 'job_posting' || id === 'referral';
+  const introRules = CATEGORY_DEFINITIONS.filter(isIntroRule);
+  const otherRules = CATEGORY_DEFINITIONS.filter((c) => !isIntroRule(c));
   const posts = [
     ...SYNTHETIC_FIXTURES.map((f, i) => ({
       id: f.id,
-      title: 'Synthetic post ' + (i + 1),
+      title:
+        f.id === 'job-referral'
+          ? 'Job opening with a referral'
+          : 'Sample post ' + (i + 1),
       body: f.text.replace('[Synthetic example] ', ''),
     })),
     {
@@ -23,42 +52,76 @@ export function Demo({
   return (
     <div className="full-demo">
       <header className="demo-intro tile">
-        <h1>Build your feed rules.</h1>
+        <h1>Try your feed rules</h1>
         <p>
-          Set Job postings to Hide, then protect Referrals with Always show.
-          Watch what happens to the first post.
+          Explore 12 categories on 14 fictional posts. Try setting Job postings
+          to Hide, then select Always show for Referrals to bring the first post
+          back.
         </p>
       </header>
-      <div className="demo-toolbar panel">
-        <p id="demo-status" role="status">
-          All posts start visible.
-        </p>
-        <a id="feed-jump" href="#demo-feed">
-          Sample feed
-        </a>
-        <a href="#demo-rules">Rules</a>
-        <div className="toolbar-buttons">
-          <button id="pause" className="btn btn-blue" type="button" disabled>
-            Pause demo
-          </button>
-          <button id="reset" className="btn btn-outline" type="button" disabled>
-            Reset demo
-          </button>
-        </div>
-      </div>
       <noscript>
         <p className="notice">
           Enable JavaScript to change rules. All sample posts remain visible.
         </p>
       </noscript>
       <div className="demo-layout">
+        <section className="demo-controls panel" aria-labelledby="demo-rules">
+          <div className="panel-title">
+            <span className="title-icon">
+              <Icon name="sliders" />
+            </span>
+            <h2 id="demo-rules" tabIndex={-1}>
+              Category rules
+            </h2>
+          </div>
+          <p>
+            Always show wins over Hide. Show normally lets other matching rules
+            apply. Changes stay in this tab.
+          </p>
+          {introRules.map((c) => (
+            <CategoryRule category={c} key={c.id} />
+          ))}
+          <details className="other-rules">
+            <summary>Explore the other {otherRules.length} categories</summary>
+            {otherRules.map((c) => (
+              <CategoryRule category={c} key={c.id} />
+            ))}
+          </details>
+          <div className="demo-toolbar">
+            <p id="demo-status" role="status">
+              All posts start visible.
+            </p>
+            <a id="feed-jump" href="#demo-feed">
+              Sample feed
+            </a>
+            <div className="toolbar-buttons">
+              <button
+                id="pause"
+                className="btn btn-primary"
+                type="button"
+                disabled
+              >
+                Pause demo
+              </button>
+              <button
+                id="reset"
+                className="btn btn-outline"
+                type="button"
+                disabled
+              >
+                Reset demo
+              </button>
+            </div>
+          </div>
+        </section>
         <section aria-labelledby="demo-feed" className="full-feed">
           <h2 id="demo-feed" tabIndex={-1}>
             Sample feed
           </h2>
           <p className="section-intro">
-            14 fixed examples. Labels illustrate the rules and make no claim
-            about model accuracy.
+            These posts have fixed labels. The development extension uses your
+            provider to classify live posts and skips recognized sponsored
+            posts.
           </p>
           {posts.map((post) => (
             <article
@@ -91,39 +154,6 @@ export function Demo({
             </article>
           ))}
           <a href="#demo-rules">Back to category rules</a>
-        </section>
-        <section className="demo-controls panel" aria-labelledby="demo-rules">
-          <div className="panel-title">
-            <span className="title-icon">
-              <Icon name="sliders" />
-            </span>
-            <h2 id="demo-rules" tabIndex={-1}>
-              Category rules
-            </h2>
-          </div>
-          <p>
-            Always show wins over Hide. Show normally lets other matching rules
-            apply. Changes stay in this tab.
-          </p>
-          {CATEGORY_DEFINITIONS.map((c) => (
-            <div className="quick-rule" key={c.id}>
-              <label htmlFor={'rule-' + c.id}>{c.label}</label>
-              <select
-                id={'rule-' + c.id}
-                data-category={c.id}
-                aria-describedby={'help-' + c.id}
-                disabled
-              >
-                <option value="show">Show normally</option>
-                <option value="hide">Hide</option>
-                <option value="always_show">Always show</option>
-              </select>
-              <small id={'help-' + c.id}>{c.definition}</small>
-            </div>
-          ))}
-          <a className="all-rules" href="#demo-feed">
-            View sample feed
-          </a>
         </section>
       </div>
     </div>

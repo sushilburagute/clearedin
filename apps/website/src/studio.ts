@@ -1,7 +1,7 @@
 import type { CategoryMode } from '@clearedin/contracts';
 import type { DemoPolicy } from './demo-policy';
 
-const jobHunt: Record<string, CategoryMode> = {
+export const jobHunt: Record<string, CategoryMode> = {
   job_posting: 'always_show',
   engagement_bait: 'hide',
   promotion: 'hide',
@@ -69,7 +69,7 @@ export function mountStudio(document: Document) {
             ? 'Remove protection'
             : 'Always show this category';
     }
-    status.textContent = `${posts.length - hidden} visible · ${hidden} hidden`;
+    status.textContent = `${hidden} of ${posts.length} posts hidden`;
     const entries = [...rules];
     preset.setAttribute(
       'aria-pressed',
@@ -107,15 +107,16 @@ export function mountStudio(document: Document) {
       post.focus();
     };
   }
-  if (window.matchMedia('(max-width: 700px)').matches)
-    quick.open = location.hash.startsWith('#quick-');
+  quick.open =
+    !window.matchMedia('(max-width: 700px)').matches ||
+    location.hash.startsWith('#quick-');
   for (const link of document.querySelectorAll<HTMLAnchorElement>(
     'a[href^="#quick-"]',
   ))
     link.addEventListener('click', () => {
       quick.open = true;
     });
-  applyPreset({});
+  applyPreset(jobHunt);
   for (const control of document.querySelectorAll<
     HTMLButtonElement | HTMLSelectElement
   >('.studio :disabled'))

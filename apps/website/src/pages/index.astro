@@ -9,6 +9,7 @@ import { SYNTHETIC_FIXTURES } from '@clearedin/test-fixtures/fake-classifier';
 import { buildDemoPolicies } from '../demo-policy';
 const policies = await buildDemoPolicies();
 const samples = [
+  ['engagement-bait', 'engagement_bait', 'chat', 'Leo Park', 'Growth marketer'],
   [
     'job-referral',
     'job_posting',
@@ -16,7 +17,6 @@ const samples = [
     'Mira Shah',
     'Engineering manager',
   ],
-  ['engagement-bait', 'engagement_bait', 'chat', 'Leo Park', 'Growth marketer'],
   [
     'technical-launch',
     'technical_content',
@@ -58,8 +58,8 @@ const page = createElement(Studio, props);
 ---
 
 <Site
-  title="Try the sample feed"
-  description="Try ClearedIn on a sample feed. Keep job openings visible, hide engagement bait, and reveal any post. No LinkedIn account or extension needed."
+  title="Choose what stays in your LinkedIn feed"
+  description="ClearedIn filters your desktop LinkedIn home feed by category. Try hiding engagement bait and protecting job postings on fictional posts, then explore the development extension."
   page={page}
 >
   <script>
