@@ -29,7 +29,6 @@ export function Frame({
   children: ReactNode;
 }) {
   const links = [
-    ['/', 'Feed studio'],
     ['/demo/', 'Full demo'],
     ['/how-it-works/', 'How it works'],
     ['/support/', 'Support'],
@@ -53,12 +52,8 @@ export function Frame({
               </a>
             ))}
           </nav>
-          <a
-            href="/install/"
-            className="btn btn-outline header-action"
-            aria-current={path === '/install/' ? 'page' : undefined}
-          >
-            Get extension
+          <a href="/#studio" className="btn btn-blue header-action">
+            Sample feed
           </a>
         </div>
       </header>
@@ -70,9 +65,9 @@ export function Frame({
           <div>
             <Brand />
             <p>
-              Development preview. Independent of LinkedIn.
+              Public demo with fictional posts. Independent of LinkedIn.
               <br />
-              Live filtering and store installation are unavailable.
+              The extension is in development.
             </p>
           </div>
           <nav aria-label="More information">
@@ -81,6 +76,7 @@ export function Frame({
                 {label}
               </a>
             ))}
+            <a href="/privacy/#analytics">Analytics settings</a>
           </nav>
         </div>
       </footer>

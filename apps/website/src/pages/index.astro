@@ -1,5 +1,7 @@
 ---
 import { createElement } from 'react';
+import { getImage } from 'astro:assets';
+import studioPhoto from '../assets/studio.jpg';
 import Site from '../layouts/Site.astro';
 import { Studio, type StudioProps } from '../components/Studio';
 import { CATEGORY_DEFINITION_BY_ID } from '@clearedin/taxonomy';
@@ -30,7 +32,14 @@ const samples = [
     'Independent database consultant',
   ],
 ] as const;
+const photo = await getImage({
+  src: studioPhoto,
+  widths: [384, 640, 960],
+  format: 'webp',
+  quality: 72,
+});
 const props: StudioProps = {
+  image: { src: photo.src, srcSet: photo.srcSet.attribute },
   posts: samples.map(([id, category, icon, author, role]) => ({
     id,
     category,
@@ -45,24 +54,16 @@ const props: StudioProps = {
     policy: policies.get(id)!,
   })),
 };
-const page = createElement(
-  'div',
-  { id: 'studio-root', 'data-studio': JSON.stringify(props) },
-  createElement(Studio, props),
-);
+const page = createElement(Studio, props);
 ---
 
 <Site
-  title="Choose what you see on LinkedIn"
+  title="Try the sample feed"
   description="Try ClearedIn on a sample feed. Keep job openings visible, hide engagement bait, and reveal any post. No LinkedIn account or extension needed."
   page={page}
 >
   <script>
-    import { createElement } from 'react';
-    import { hydrateRoot } from 'react-dom/client';
-    import { Studio, type StudioProps } from '../components/Studio';
-    const root = document.getElementById('studio-root')!;
-    const props = JSON.parse(root.dataset.studio!) as StudioProps;
-    hydrateRoot(root, createElement(Studio, props));
+    import { mountStudio } from '../studio';
+    mountStudio(document);
   </script>
 </Site>
