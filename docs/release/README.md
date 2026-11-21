@@ -4,19 +4,23 @@ ClearedIn is a development preview. The [release ledger](gates.json) records the
 
 ## Prepare a review bundle
 
-Start from the reviewed source and frozen lockfile. Run the [development checks](../../README.md#commands), including the integration build and site checks. Then run:
+Start from a clean Git checkout. Use Node 24.22.3 and pnpm 12.4.1. Run the [development checks](../../README.md#commands), including the integration build and site checks. Prepare and verify the bundle from the repository root.
 
 ```sh
 pnpm package:chrome
 pnpm package:firefox
 pnpm artifacts:check
 pnpm release:prepare
+pnpm release:verify
+pnpm release:amo
 pnpm release:check
 ```
 
-The browser archives are under `apps/extension/.output/`. The static site is in `apps/website/dist/`. Artifact checks compare each browser ZIP with the inspected build. The WXT Firefox sources ZIP covers the extension only. Use `.release/repository-source.zip` for a full monorepo rebuild.
+The browser archives are under `apps/extension/.output/`. The static site is in `apps/website/dist/`. Artifact checks compare each browser ZIP with the inspected build. Release preparation archives every tracked file at the recorded commit, including the workspace packages, lockfiles, dotfiles and build instructions. WXT's extension-only source ZIP is disabled.
 
-`.release/inventory.json` records SHA-256 hashes, source commit, dirty state, and Node version. Release preparation needs a Git checkout. The archived source can be built without Git. Before submission, reproduce the packages independently from a clean tag and retain both inventories. The gate checker exits 2 while a decision is pending or failed.
+`.release/inventory.json` identifies the commit and gives SHA-256 hashes for the archives and source files. The verifier extracts the source ZIP to a fresh temporary directory, installs its frozen dependencies, builds both targets, and requires the delivered and rebuilt ZIPs to match byte for byte. CI retains the inventory, rebuild results and Mozilla validator report with the development bundle. The gate checker exits 2 while a decision is pending or failed. An accepted tag and release-owner signoff are still outstanding.
+
+Reviewers building directly from the source ZIP can use the commands, asset files and privacy explanations in the [store reviewer notes](store-review.md).
 
 ## Reviewer walkthrough
 

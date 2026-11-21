@@ -25,7 +25,9 @@
     "site:check": "node scripts/check-site.mjs && node apps/website/tests/check-static.mjs",
     "evaluate": "node scripts/evaluate.mjs",
     "release:check": "node scripts/check-release.mjs",
-    "release:prepare": "node scripts/prepare-release.mjs"
+    "release:prepare": "node scripts/prepare-release.mjs",
+    "release:verify": "node scripts/verify-reviewer-build.mjs",
+    "release:amo": "pnpm --dir scripts/amo install --frozen-lockfile --ignore-scripts && node scripts/amo/validate.mjs"
   },
   "devDependencies": {
     "@clearedin/contracts": "workspace:*",

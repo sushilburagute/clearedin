@@ -1,5 +1,5 @@
 // Use the shipped options page's controls with an isolated, temporary install.
-export async function checkSettings(openOptions, until, check) {
+export async function checkSettings(openOptions, until, check, upgrade) {
   async function open() {
     const evaluate = await openOptions();
     await until(
@@ -50,6 +50,14 @@ export async function checkSettings(openOptions, until, check) {
     'saved rule survives reopening settings',
     (await evaluate(selection)) === 'hide',
   );
+  if (upgrade) {
+    await upgrade();
+    evaluate = await open();
+    check(
+      'saved rule survives same-ID higher-version update',
+      (await evaluate(selection)) === 'hide',
+    );
+  }
   const dataSection =
     "document.getElementById('data-title').closest('section')";
   await evaluate(
