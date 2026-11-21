@@ -2,7 +2,13 @@ import { pages } from '../content';
 import { guides } from './Frame';
 import { Icon } from './Icon';
 
-export function Guide({ page }: { page: (typeof pages)[number] }) {
+export function Guide({
+  page,
+  production,
+}: {
+  page: (typeof pages)[number];
+  production: boolean;
+}) {
   const faq = page.slug === 'support';
   return (
     <div className="guide-layout">
@@ -52,6 +58,43 @@ export function Guide({ page }: { page: (typeof pages)[number] }) {
           )}
         </div>
         <div className="guide-sections">
+          {page.slug === 'privacy' && (
+            <section className="panel" aria-labelledby="analytics">
+              <h2 id="analytics" tabIndex={-1}>
+                Website analytics
+              </h2>
+              {production ? (
+                <>
+                  <p>
+                    Analytics are optional. If you allow them, Google Tag
+                    Manager loads Google Analytics to measure visits. Google can
+                    receive your browser information and the pages you visit,
+                    and may set cookies.
+                  </p>
+                  <p>
+                    Your browser remembers this setting for this site. You can
+                    turn analytics off here at any time.
+                  </p>
+                  <button
+                    id="analytics-toggle"
+                    className="btn btn-outline"
+                    type="button"
+                    hidden
+                  >
+                    Allow Google Analytics
+                  </button>
+                  <p id="analytics-status" role="status">
+                    Analytics are off.
+                  </p>
+                </>
+              ) : (
+                <p>
+                  Analytics are off on this build. Only the production website
+                  offers opt-in analytics.
+                </p>
+              )}
+            </section>
+          )}
           {page.sections.map((section) =>
             faq ? (
               <details className="panel" key={section.title}>
@@ -70,8 +113,8 @@ export function Guide({ page }: { page: (typeof pages)[number] }) {
             ),
           )}
         </div>
-        <a className="btn btn-blue" href="/demo/">
-          Try the full demo
+        <a className="btn btn-blue" href="/#studio">
+          Try the sample feed
         </a>
       </article>
     </div>
@@ -82,8 +125,8 @@ export function MissingPage() {
     <div className="missing tile">
       <h1>Page not found</h1>
       <p>Return to the feed studio to explore the sample feed and its rules.</p>
-      <a className="btn btn-blue" href="/">
-        Back to feed studio
+      <a className="btn btn-blue" href="/#studio">
+        Back to sample feed
       </a>
     </div>
   );

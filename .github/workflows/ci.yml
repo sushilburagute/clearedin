@@ -24,7 +24,13 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm test:integration
-      - run: pnpm site:check
+      - name: Check preview and production website output
+        run: |
+          for environment in production preview; do
+            export VERCEL_ENV="$environment"
+            pnpm --filter @clearedin/website build
+            pnpm site:check
+          done
       - run: pnpm docs:check
       # Integration builds the site, and each packaging command builds its browser target.
       - run: pnpm package:chrome

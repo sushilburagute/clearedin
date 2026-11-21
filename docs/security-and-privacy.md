@@ -1,6 +1,8 @@
 # Security and privacy
 
-The website demo uses fixed examples and has no key collection or accounts. The extension stores preferences locally. Its connection test sends a packaged sample with the user's key to the selected provider. Feed classification requires a separate opt-in and enablement. The browser sends post text, classification instructions and an authentication header directly to that provider. The provider receives the user's network address as part of the connection.
+The website demo uses fixed examples and has no key collection or accounts. Website analytics are off by default. On production, visitors can allow Google Analytics through Google Tag Manager and withdraw in Analytics settings. Preview builds omit the loader.
+
+The extension stores preferences locally. Its connection test sends a packaged sample with the user's key to the selected provider. Feed classification requires a separate opt-in and enablement. The browser sends post text, classification instructions and an authentication header directly to that provider. The provider receives the user's network address as part of the connection.
 
 ## Conditions for live processing
 

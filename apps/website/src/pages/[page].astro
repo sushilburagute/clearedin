@@ -15,5 +15,8 @@ const { page } = Astro.props;
 <Site
   title={page.title}
   description={page.description}
-  page={createElement(Guide, { page })}
+  page={createElement(Guide, {
+    page,
+    production: import.meta.env.PROD && process.env.VERCEL_ENV === 'production',
+  })}
 />

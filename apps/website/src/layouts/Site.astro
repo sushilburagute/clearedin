@@ -11,9 +11,13 @@ interface Props {
   indexable?: boolean;
 }
 const { title, description, page, indexable = true } = Astro.props;
-const allowIndexing = process.env.VERCEL_ENV === 'production' && indexable;
-const enableAnalytics =
-  import.meta.env.PROD && process.env.VERCEL_ENV !== 'preview';
+const production =
+  import.meta.env.PROD && process.env.VERCEL_ENV === 'production';
+const allowIndexing = production && indexable;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const shareImage = new URL('/sample-feed.png', Astro.site);
+const shareAlt =
+  'ClearedIn sample feed showing a visible job opening and a hidden engagement bait post.';
 const html = renderToString(
   createElement(Frame, { path: Astro.url.pathname, children: page }),
 );
@@ -23,11 +27,30 @@ const html = renderToString(
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    {enableAnalytics && <script is:inline async src="/tag-manager.js"></script>}
+    {production && (
+      <script is:inline type="module" src="/tag-manager.js"></script>
+    )}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {!allowIndexing && <meta name="robots" content="noindex" />}
     {indexable && (
-      <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+      <>
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ClearedIn" />
+        <meta property="og:title" content={title + ' | ClearedIn'} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={shareImage} />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={shareAlt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title + ' | ClearedIn'} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={shareImage} />
+        <meta name="twitter:image:alt" content={shareAlt} />
+      </>
     )}
     <meta name="description" content={description} />
     <meta
