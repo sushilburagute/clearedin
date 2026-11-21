@@ -16,12 +16,12 @@ Every result needs expected/actual values, sample size, environment, repro, seve
 
 The 200-card run exposed a discovery bug when more cards arrived than the pending queue could process. The walker now pauses until there is room. A [200-post regression test](../../packages/linkedin-adapter/tests/adapter.test.ts) checks that every card reaches the intersection observer.
 
-| Measurement | Samples | Median | p95 | Maximum |
-| --- | ---: | ---: | ---: | ---: |
-| No-extension scroll frame interval | 120 | 6.06 ms | 6.06 ms | 6.08 ms |
-| Enabled-extension scroll frame interval | 120 | 6.06 ms | 6.06 ms | 6.08 ms |
-| Reveal button handler through visible layout | 20 | 2 ms | 4 ms | 4 ms |
-| Pause from settings through restoration in the feed tab | 20 | 34 ms | 64 ms | 104 ms |
+| Measurement                                             | Samples |  Median |     p95 | Maximum |
+| ------------------------------------------------------- | ------: | ------: | ------: | ------: |
+| No-extension scroll frame interval                      |     120 | 6.06 ms | 6.06 ms | 6.08 ms |
+| Enabled-extension scroll frame interval                 |     120 | 6.06 ms | 6.06 ms | 6.08 ms |
+| Reveal button handler through visible layout            |      20 |    2 ms |    4 ms |    4 ms |
+| Pause from settings through restoration in the feed tab |      20 |   34 ms |   64 ms |  104 ms |
 
 The pause and reveal p95 values met the 100 ms target on this host. One pause took 104 ms. The frame samples describe one short headless scroll. A main-thread trace, a 30-minute scroll with node recycling, heap retention, live API timing and routine measurements on Chrome are still due.
 
