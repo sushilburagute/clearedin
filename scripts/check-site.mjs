@@ -41,6 +41,20 @@ for (const file of pages) {
       `https://preview.invalid/${path.relative(root, file).replaceAll('\\', '/')}`,
     );
     if (url.origin !== 'https://preview.invalid') {
+      if (node.tagName === 'LINK' && node.getAttribute('rel') === 'canonical') {
+        const pathname =
+          '/' +
+          path
+            .relative(root, file)
+            .replaceAll('\\', '/')
+            .replace(/index\.html$/, '');
+        assert.equal(
+          url.href,
+          new URL(pathname, 'https://clearedin.sush.dev').href,
+          file,
+        );
+        continue;
+      }
       assert(node.tagName === 'A', `Remote asset in ${file}`);
       continue;
     }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-11-20",
+  "updated": "2026-11-21",
   "gates": [
     { "id": "platform", "status": "pending", "ownerRole": "Product owner", "ownerName": null, "reason": "Written platform and distribution decision is not supplied.", "evidence": ["docs/release/README.md"] },
     { "id": "credentials", "status": "pending", "ownerRole": "Security and technical owner", "ownerName": null, "reason": "Persistent browser restart and interactive permission evidence, plus provider-specific client-key decisions, remain open.", "evidence": ["experiments/browser-feasibility/README.md", "experiments/browser-feasibility/evidence/chrome-windows.json", "experiments/browser-feasibility/evidence/firefox-windows.json"] },
@@ -8,10 +8,10 @@
     { "id": "runtime", "status": "pending", "ownerRole": "Technical and QA owner", "ownerName": null, "reason": "Chrome and Firefox settings persistence and reset have browser coverage. Production inference wiring, restart, permission and cross-tab feed behavior still need acceptance.", "evidence": ["docs/completion-audit.md", "docs/software-architecture.md"] },
     { "id": "quality", "status": "pending", "ownerRole": "Independent evaluation owner", "ownerName": null, "reason": "Independent annotations, held-out corpus, calibrated provider profiles, and measured performance are unavailable.", "evidence": ["docs/testing-and-evaluation.md", "tests/evaluation/metrics.mjs"] },
     { "id": "accessibility", "status": "pending", "ownerRole": "Design and QA owner", "ownerName": null, "reason": "Chrome website layout and keyboard smoke checks passed. Manual assistive technology, zoom, high contrast and broader cross-browser coverage remain pending.", "evidence": ["docs/completion-audit.md"] },
-    { "id": "privacy", "status": "pending", "ownerRole": "Privacy owner", "ownerName": null, "reason": "Operator identity, contact, hosting logs, final provider disclosures, and store declarations need acceptance.", "evidence": ["docs/security-and-privacy.md"] },
+    { "id": "privacy", "status": "pending", "ownerRole": "Privacy owner", "ownerName": null, "reason": "Public support and privacy contacts are supplied. Operator identity, hosting logs and retention, final provider disclosures, and store declarations need acceptance.", "evidence": ["docs/security-and-privacy.md"] },
     { "id": "build", "status": "pending", "ownerRole": "Release owner", "ownerName": null, "reason": "Development builds and source inventory are available; an accepted clean tagged source and independent rebuild are still required.", "evidence": ["docs/release/README.md", "scripts/prepare-release.mjs"] },
     { "id": "stores", "status": "pending", "ownerRole": "Release owner", "ownerName": null, "reason": "Publisher identity, license, signing, reviewer assets, update exercise, and actual store approval are unresolved.", "evidence": ["docs/release/README.md"] },
-    { "id": "website", "status": "pending", "ownerRole": "Web owner", "ownerName": null, "reason": "Static implementation exists; domain, host, deployed headers, public support and approved install URLs are pending.", "evidence": ["docs/completion-audit.md"] },
+    { "id": "website", "status": "pending", "ownerRole": "Web owner", "ownerName": null, "reason": "The demo is deployed on Vercel at clearedin.sush.dev. The site lists support@sush.dev and @sush_dev. Production release verification and approved extension install URLs remain open.", "evidence": ["docs/completion-audit.md"] },
     { "id": "operations", "status": "pending", "ownerRole": "Release owner", "ownerName": null, "reason": "Named responder, incident contacts, and a higher-version recovery exercise are not supplied.", "evidence": ["docs/release/README.md"] }
   ]
 }

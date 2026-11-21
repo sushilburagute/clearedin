@@ -1,8 +1,9 @@
 export const pages = [
   {
     slug: 'how-it-works',
-    title: 'Rules you can reason about',
-    description: 'Category rules, overlapping labels, uncertainty, and reveal.',
+    title: 'How the feed rules work',
+    description:
+      'Try the rules on sample posts. Your choices apply only to the demo.',
     sections: [
       {
         title: 'Start with everything visible',
@@ -29,29 +30,29 @@ export const pages = [
         ],
       },
       {
-        title: 'Current support',
+        title: 'What you can try today',
         paragraphs: [
-          'The demo uses fixed examples and the shared policy engine. Live LinkedIn filtering is unavailable. Desktop home-feed compatibility, browser installation, and live provider access still need validation.',
+          'Explore all 12 categories on 14 sample posts in the full demo. Filtering your own LinkedIn feed will require the browser extension, which is still in development.',
         ],
       },
     ],
   },
   {
     slug: 'install',
-    title: 'Installation is coming later',
+    title: 'Try ClearedIn in your browser',
     description:
-      'Chrome and Firefox installation status for the development preview.',
+      'The sample feed works here without installation. The Chrome and Firefox extensions are still in development.',
     sections: [
       {
-        title: 'Chrome: not available in the store',
+        title: 'Chrome Web Store',
         paragraphs: [
-          'No Chrome Web Store listing has been approved or configured. There is no public installation link.',
+          'We’ll link to the Chrome extension here once its store listing is available.',
         ],
       },
       {
-        title: 'Firefox: not available in the store',
+        title: 'Firefox Add-ons',
         paragraphs: [
-          'No Firefox Add-ons listing has been approved or configured. Development builds are not a supported public release.',
+          'We’ll add the Firefox installation link here when Mozilla approves the listing.',
         ],
       },
       {
@@ -60,18 +61,13 @@ export const pages = [
           'Use the repository README to install its pinned toolchain, run checks, and generate separate Chrome and Firefox development packages. The options page saves category preferences locally and offers a separate synthetic UI demo. Live filtering and credentials remain unavailable.',
         ],
       },
-      {
-        title: 'Before public release',
-        paragraphs: [
-          'Browser and credential validation, independently evaluated classification quality, platform and distribution decisions, and operator/support details must be completed. Building a ZIP does not satisfy those gates.',
-        ],
-      },
     ],
   },
   {
     slug: 'setup',
-    title: 'Choose a provider with context',
-    description: 'Provider choices, planned consent flow, and request limits.',
+    title: 'Does the demo need a provider?',
+    description:
+      'You can try every rule without an account or API key. Provider setup is planned for the browser extension.',
     sections: [
       {
         title: 'Three separate adapters',
@@ -108,7 +104,8 @@ export const pages = [
       {
         title: 'This website and demo',
         paragraphs: [
-          'The site is static. The demo runs locally on fixed synthetic posts, does not ask for credentials, and makes no provider requests. Demo controls are held in page memory and reset on reload. No analytics or application backend is implemented. A future hosting operator may keep ordinary access logs; the host, operator, and retention policy must be identified before launch.',
+          'Vercel hosts clearedin.sush.dev. The sample posts and rules load with the page. Your choices stay in this tab and reset when you reload. The demo accesses neither your LinkedIn account nor an AI provider.',
+          'Vercel receives the requests needed to serve the site. The demo code includes no analytics. We have yet to confirm the hosting account’s logging and retention settings.',
         ],
       },
       {
@@ -129,24 +126,17 @@ export const pages = [
           'Provider retention varies by provider, account, and configuration. No zero-retention promise is made. The chosen recipient, applicable retention information, and explicit consent must be presented before live transmission. Withdrawal must stop requests and restore posts.',
         ],
       },
-      {
-        title: 'Release facts still pending',
-        paragraphs: [
-          'The operating entity, support/privacy contact, public domain, hosting log policy, and provider/browser support matrix are unresolved. This development notice is not a completed production privacy policy.',
-        ],
-      },
     ],
   },
   {
     slug: 'support',
-    title: 'Questions before you start',
-    description:
-      'Frequently asked questions, limitations, and safe development feedback.',
+    title: 'Help with the ClearedIn demo',
+    description: 'Get in touch or find an answer about the sample feed.',
     sections: [
       {
         title: 'Does it filter my LinkedIn feed today?',
         paragraphs: [
-          'No. The working demo is synthetic. Local extension settings and component implementations exist, but live filtering is gated on runtime, browser, security, and quality validation.',
+          'The website filters sample posts. Your LinkedIn feed stays as it is. The extension for live filtering is still in development.',
         ],
       },
       {
@@ -170,7 +160,7 @@ export const pages = [
       {
         title: 'How should I report a problem?',
         paragraphs: [
-          'A public support contact is pending. Repository collaborators can report a reproduction using synthetic text, the build version, browser version, and sanitized error codes. Never include API keys, private messages, raw provider responses, or real-feed screenshots.',
+          'Send the page address, your browser version, and the steps you took using a sample post. Keep private posts, screenshots of your LinkedIn feed, and credentials out of the report.',
         ],
       },
       {

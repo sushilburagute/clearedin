@@ -17,7 +17,7 @@ For the extension, run `pnpm --filter @clearedin/extension dev` for Chrome or `p
 
 Import the repository with **Root Directory** set to `apps/website` and leave **Include source files outside of the Root Directory in the Build Step** enabled so Astro can read the shared workspace packages and lockfile. The [Vercel configuration](apps/website/vercel.json) builds the static site with the pinned pnpm version. It skips install lifecycle scripts because the root `prepare` script generates browser extension files. The static demo needs no environment variables or API keys.
 
-The deployment keeps the preview's `noindex` and security headers and gives Astro's fingerprinted assets a one-year browser cache. When changing the workspace pnpm version, update both commands in `apps/website/vercel.json` as well.
+The public demo runs at [clearedin.sush.dev](https://clearedin.sush.dev/). Its pages allow indexing when Vercel builds with `VERCEL_ENV=production`. Other builds and the 404 page carry a `noindex` directive. All deployments apply the security headers and give Astro’s fingerprinted assets a one-year browser cache. When changing the workspace pnpm version, update both commands in `apps/website/vercel.json` as well.
 
 ## Commands
 

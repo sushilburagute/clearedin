@@ -27,7 +27,7 @@ The browser archives are under `apps/extension/.output/`. The static site is in 
 
 ## Deployment and incidents
 
-Publish only the reviewed static build when the host, domain, support contact, and listings are approved. On Vercel, `apps/website/vercel.json` applies the preview headers. For other hosts, apply `apps/website/public/_headers` or equivalent host settings. Check HTTPS, CSP, links, and preview noindex on the deployed site. Retain the previous static artifact for rollback.
+Vercel hosts the public demo at [clearedin.sush.dev](https://clearedin.sush.dev/). Check HTTPS, CSP, links, and support contacts on a review deployment before promoting it. Verify that the production pages allow indexing and review deployments carry `noindex`. Vercel applies the headers in `apps/website/vercel.json`. For other hosts, apply `apps/website/public/_headers` or equivalent host settings. Retain the previous static artifact for rollback. Publish extension install links once the respective listings are approved.
 
 | Incident | Immediate action and recovery |
 | --- | --- |

@@ -63,18 +63,18 @@ export function StudioHero() {
   return (
     <section className="hero">
       <div className="hero-copy">
-        <p className="hero-label">
-          <Icon name="sliders" size={15} />
-          LinkedIn feed customizer
-        </p>
-        <h1>Your feed, in focus.</h1>
-        <p>
-          Keep the opportunities and ideas you come for. Choose which posts make
-          it into your feed.
+        <h1>Choose what you see on LinkedIn.</h1>
+        <p className="hero-description">
+          Try it on a sample feed. Keep job openings visible, hide engagement
+          bait, and bring back any post with a click.
         </p>
         <a className="btn btn-white" href="#studio">
-          Customize your feed <Icon name="arrow" size={17} />
+          Try the sample feed <Icon name="arrow" size={17} />
         </a>
+        <p className="hero-note">
+          The browser extension is in development. This demo runs entirely on
+          this page.
+        </p>
       </div>
       <PreviewArt />
     </section>
@@ -129,18 +129,12 @@ export function Studio({ posts }: StudioProps) {
           <h2 id="studio" tabIndex={-1}>
             Feed studio
           </h2>
-          <p>Try a preset or tune individual categories on a sample feed.</p>
+          <p>
+            Select <strong>Job hunt</strong> to hide engagement bait and keep
+            job openings in view.
+          </p>
         </div>
         <div className="presets" role="group" aria-label="Feed presets">
-          <button
-            type="button"
-            aria-pressed={!hasRules}
-            onClick={() => applyPreset(false)}
-            disabled={!ready}
-          >
-            <Icon name="grid" size={15} />
-            Everyday
-          </button>
           <button
             type="button"
             aria-pressed={isJobHunt}
@@ -149,6 +143,15 @@ export function Studio({ posts }: StudioProps) {
           >
             <Icon name="briefcase" size={16} />
             Job hunt
+          </button>
+          <button
+            type="button"
+            aria-pressed={!hasRules}
+            onClick={() => applyPreset(false)}
+            disabled={!ready}
+          >
+            <Icon name="grid" size={15} />
+            Show all
           </button>
         </div>
       </div>

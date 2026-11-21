@@ -7,8 +7,8 @@ import { SYNTHETIC_FIXTURES } from '@clearedin/test-fixtures/fake-classifier';
 import { buildDemoPolicies } from '../demo-policy';
 const policies = await buildDemoPolicies();
 const samples = [
-  ['job-referral', 'job_posting', 'briefcase'],
   ['engagement-bait', 'engagement_bait', 'chat'],
+  ['job-referral', 'job_posting', 'briefcase'],
   ['technical-launch', 'technical_content', 'code'],
   ['consulting-milestone', 'promotion', 'spark'],
 ] as const;
@@ -38,8 +38,8 @@ const page = createElement(
 ---
 
 <Site
-  title="Feed studio"
-  description="Customize a sample LinkedIn feed with category rules and a job hunt preset."
+  title="Choose what you see on LinkedIn"
+  description="Try ClearedIn on a sample feed. Keep job openings visible, hide engagement bait, and reveal any post. No LinkedIn account or extension needed."
   page={page}
 >
   <script>
