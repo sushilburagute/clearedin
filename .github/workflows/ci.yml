@@ -39,13 +39,6 @@ jobs:
       - run: pnpm release:prepare
       - run: pnpm release:verify
       - run: pnpm release:amo
-      - run: node experiments/browser-feasibility/browser-runner.mjs chrome google-chrome --upgrade
-      - run: node experiments/browser-feasibility/browser-runner.mjs firefox firefox --upgrade
-      - uses: actions/upload-artifact@v4
-        with:
-          name: desktop-upgrade-evidence
-          path: experiments/browser-feasibility/results/*-upgrade.json
-          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: development-review-bundle
@@ -54,3 +47,26 @@ jobs:
           if-no-files-found: error
       # Signed store delivery and human acceptance are separate release gates.
       # No deployment, signing, provider secrets, or publishing in this workflow.
+  desktop-upgrades:
+    needs: validate
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - uses: actions/download-artifact@v4
+        with:
+          name: development-review-bundle
+          path: apps/extension/.output
+      - name: Extract the packaged Firefox manifest for the upgrade driver
+        run: |
+          $archive = Get-Item apps/extension/.output/*-firefox.zip
+          Expand-Archive -LiteralPath $archive.FullName -DestinationPath apps/extension/.output/firefox-mv3
+      - run: node experiments/browser-feasibility/browser-runner.mjs chrome --upgrade
+      - run: node experiments/browser-feasibility/browser-runner.mjs firefox --upgrade
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-upgrade-evidence
+          path: experiments/browser-feasibility/results/*-upgrade.json
+          if-no-files-found: error
