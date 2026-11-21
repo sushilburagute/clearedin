@@ -154,10 +154,10 @@ afterEach(() => {
 });
 
 describe('feed extraction', () => {
-  it('only supports the exact HTTPS LinkedIn feed origin/path family', () => {
+  it('only supports the HTTPS LinkedIn home feed', () => {
     for (const address of [
       'https://www.linkedin.com/feed/',
-      'https://www.linkedin.com/feed/update/abc',
+      'https://www.linkedin.com/feed/?sort=recent',
       'https://www.linkedin.com/feed',
     ])
       expect(supportsFeedRoute(new URL(address))).toBe(true);
@@ -165,6 +165,7 @@ describe('feed extraction', () => {
       'http://www.linkedin.com/feed/',
       'https://linkedin.com/feed/',
       'https://www.linkedin.com/feeds/',
+      'https://www.linkedin.com/feed/update/abc',
       'https://www.linkedin.com/messaging/',
       'https://www.linkedin.com/in/me',
       'https://www.linkedin.com.evil.invalid/feed/',
@@ -263,6 +264,34 @@ describe('feed extraction', () => {
 });
 
 describe('lifecycle, identity and reversible rendering', () => {
+  it('registers each of 200 existing posts across bounded discovery batches', async () => {
+    const cards = Array.from(
+      { length: 200 },
+      (_, i) =>
+        `<article class="feed-shared-update-v2" data-urn="urn:li:activity:${i}"><div class="update-components-text">Synthetic post ${i}</div></article>`,
+    ).join('');
+    const h = harness(
+      `<html><body><main><div role="feed">${cards}</div></main></body></html>`,
+    );
+    await vi.advanceTimersByTimeAsync(2000);
+    const observed = new Set(h.observe.mock.calls.map(([node]) => node));
+    for (const article of h.root.querySelectorAll('article'))
+      expect(observed.has(article)).toBe(true);
+    h.stop();
+  });
+  it('skips marked advertisements before hashing and publishing live content', async () => {
+    const digest = vi.fn(async (text: string) =>
+      createHash('sha256').update(text).digest('hex'),
+    );
+    const h = harness(SYNTHETIC_FEED_HTML, { excludeSponsored: true, digest });
+    await h.flush();
+    h.intersect();
+    await h.flush();
+    expect(digest).not.toHaveBeenCalled();
+    expect(h.posts).toEqual([]);
+    expect(h.post.hidden).toBe(false);
+    h.stop();
+  });
   it('gates publication on visibility, cancels offscreen subscriptions, then re-emits on return', async () => {
     const digest = vi.fn(async (text: string) =>
       createHash('sha256').update(text).digest('hex'),

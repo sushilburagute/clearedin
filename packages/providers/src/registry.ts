@@ -7,10 +7,12 @@ import { createOpenAIAdapter, OPENAI_CAPABILITIES } from './openai';
 import { createAnthropicAdapter, ANTHROPIC_CAPABILITIES } from './anthropic';
 import { createTypeSafeAdapter, typesafeCapabilities } from './typesafe';
 
-/** Component capabilities are not production approval. No provider is enabled yet. */
+/** Availability here records acceptance for public release. The opt-in development
+ * build also exposes the pinned adapters for end-to-end qualification. */
 export const PROVIDER_REGISTRY = Object.freeze({
   typesafe: {
     model: typesafeCapabilities.model,
+    adapterVersion: typesafeCapabilities.adapterVersion,
     endpoint: typesafeCapabilities.endpoint,
     available: false,
     reason:
@@ -18,6 +20,7 @@ export const PROVIDER_REGISTRY = Object.freeze({
   },
   openai: {
     model: OPENAI_CAPABILITIES.model,
+    adapterVersion: OPENAI_CAPABILITIES.adapterVersion,
     endpoint: OPENAI_CAPABILITIES.endpoint,
     available: false,
     reason:
@@ -25,6 +28,7 @@ export const PROVIDER_REGISTRY = Object.freeze({
   },
   anthropic: {
     model: ANTHROPIC_CAPABILITIES.model,
+    adapterVersion: ANTHROPIC_CAPABILITIES.adapterVersion,
     endpoint: ANTHROPIC_CAPABILITIES.endpoint,
     available: false,
     reason:
@@ -35,7 +39,7 @@ export const PROVIDER_REGISTRY = Object.freeze({
 // Keep the availability export used by earlier runtime integrations.
 export const PROVIDER_AVAILABILITY = PROVIDER_REGISTRY;
 
-/** Explicit component-test factory. Production must also satisfy the registry gates. */
+/** Fixed-destination adapter used by the broker after the user selects a provider. */
 export function createProviderAdapter(
   provider: ProviderId,
   network: NetworkClient,

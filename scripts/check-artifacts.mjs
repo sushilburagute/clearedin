@@ -27,7 +27,11 @@ for (const browser of ['chrome', 'firefox']) {
   assert.equal(manifest.manifest_version, 3);
   assert.deepEqual(manifest.permissions ?? [], ['storage']);
   assert.deepEqual(manifest.host_permissions ?? [], []);
-  assert.deepEqual(manifest.optional_host_permissions ?? [], []);
+  assert.deepEqual([...(manifest.optional_host_permissions ?? [])].sort(), [
+    'https://api.anthropic.com/*',
+    'https://api.openai.com/*',
+    'https://api.typesafe.ai/*',
+  ]);
   assert.equal(manifest.externally_connectable, undefined);
   assert.equal(manifest.options_ui.open_in_tab, true);
   for (const size of [16, 32, 48, 128]) {
@@ -41,12 +45,18 @@ for (const browser of ['chrome', 'firefox']) {
   assert.equal(manifest.update_url, undefined);
   assert.equal(
     manifest.content_security_policy.extension_pages,
-    "script-src 'self'; object-src 'self'",
+    "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; connect-src https://api.typesafe.ai https://api.openai.com https://api.anthropic.com",
   );
   assert.deepEqual(
-    manifest.content_scripts.flatMap((script) => script.matches),
-    ['https://www.linkedin.com/feed/*'],
+    manifest.content_scripts.flatMap((script) => script.matches).sort(),
+    [
+      'https://www.linkedin.com/feed',
+      'https://www.linkedin.com/feed/',
+      'https://www.linkedin.com/feed/?*',
+      'https://www.linkedin.com/feed?*',
+    ],
   );
+  assert(manifest.content_scripts.every((script) => !script.all_frames));
   if (browser === 'chrome')
     assert.equal(typeof manifest.background.service_worker, 'string');
   else {
@@ -58,6 +68,11 @@ for (const browser of ['chrome', 'firefox']) {
       manifest.browser_specific_settings.gecko.data_collection_permissions
         .required,
       ['none'],
+    );
+    assert.deepEqual(
+      manifest.browser_specific_settings.gecko.data_collection_permissions
+        .optional,
+      ['authenticationInfo', 'websiteContent'],
     );
     assert(
       Array.isArray(manifest.background.scripts),

@@ -18,7 +18,7 @@ export async function checkSettings(openOptions, until, check, upgrade) {
     (await evaluate(selection)) === 'show',
   );
   check(
-    'credential entry is unavailable in the development build',
+    'credential entry waits for provider selection and host permission',
     !(await evaluate(
       "document.querySelector('input[type=password]:enabled') !== null",
     )),

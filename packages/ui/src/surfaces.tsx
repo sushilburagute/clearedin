@@ -35,7 +35,7 @@ function Frame({
     <main className={popup ? 'ci-app ci-popup' : 'ci-app ci-options'}>
       <header>
         <p className="ci-wordmark">ClearedIn</p>
-        <h1>Your feed, your choices.</h1>
+        <h1>{popup ? 'Feed filter' : 'Feed filter settings'}</h1>
       </header>
       {demo && (
         <aside className="ci-demo" aria-label="Synthetic demo">
@@ -104,10 +104,12 @@ export function PopupSurface({
                 {status.model && ` / ${status.model}`}
               </dd>
             </div>
-            <div>
-              <dt>Hidden this session</dt>
-              <dd>{status.sessionHiddenCount}</dd>
-            </div>
+            {mode === 'demo' && (
+              <div>
+                <dt>Hidden this session</dt>
+                <dd>{status.sessionHiddenCount}</dd>
+              </div>
+            )}
             <div>
               <dt>Requests remaining today</dt>
               <dd>
@@ -128,7 +130,8 @@ export function PopupSurface({
           {status.dailyRequestsUsed === 0 && !status.error && (
             <p>No classification requests today.</p>
           )}
-          {(mode !== 'unavailable' || status.enabled) && (
+          {(status.enabled ||
+            (mode !== 'unavailable' && status.consentGranted)) && (
             <Button
               disabled={
                 state.busy ||
@@ -157,7 +160,9 @@ export function PopupSurface({
       >
         {status?.error?.code === 'invalid_credential'
           ? 'Update key in settings'
-          : 'Open settings'}
+          : mode === 'connected' && status?.state === 'needs_setup'
+            ? 'Set up feed filtering'
+            : 'Open settings'}
       </Button>
       <p role="status" aria-live="polite">
         {state.notice}
@@ -204,6 +209,10 @@ function PreferencesForm({
   const [limitEdit, setLimit] = useState<string | null>(null);
   const [capEdit, setCap] = useState<string | null>(null);
   const [currencyEdit, setCurrency] = useState<string | null>(null);
+  const connected = controller.environment.mode === 'connected';
+  const editableCategories = connected
+    ? CATEGORY_DEFINITIONS.filter(({ id }) => id !== 'sponsored')
+    : CATEGORY_DEFINITIONS;
   const modes = { ...settings.categoryModes, ...ruleEdits };
   const savedLimit = String(settings.dailyRequestLimit);
   const savedCap = settings.estimatedCostCap
@@ -225,7 +234,7 @@ function PreferencesForm({
       onSubmit={async (event) => {
         event.preventDefault();
         const preferences: Preferences = {
-          categoryModes: modes,
+          categoryModes: connected ? { ...modes, sponsored: 'show' } : modes,
           dailyRequestLimit: Number(limit),
           languages: ['en'],
           estimatedCostCap:
@@ -242,11 +251,12 @@ function PreferencesForm({
       <section aria-labelledby="categories-title">
         <h2 id="categories-title">Choose what stays in your feed</h2>
         <p>
-          Show normally is neutral: another hidden category can still hide the
-          post. Always show protects matching posts. Every category starts at
-          Show normally.
+          Choose Hide to collapse matching posts. Always show takes priority
+          when several categories match. Show normally leaves the decision to
+          your other rules.
         </p>
-        {CATEGORY_DEFINITIONS.map((category) => (
+        {connected && <p>Posts marked Sponsored or Promoted stay visible.</p>}
+        {editableCategories.map((category) => (
           <CategoryControl
             key={category.id}
             label={category.label}
@@ -268,8 +278,8 @@ function PreferencesForm({
       <section aria-labelledby="limits-title">
         <h2 id="limits-title">Set usage limits</h2>
         <p>
-          Connection tests, failures, and retries can count as requests. Cost
-          estimates are local estimates, not a provider spending guarantee.
+          Connection tests, failures, and retries can count as requests. Your
+          provider determines the amount billed.
         </p>
         <div className="ci-fields">
           <label>
@@ -349,7 +359,7 @@ export function OptionsSurface({
   );
   const environment = controller.environment;
   const localOnly = environment.mode === 'unavailable';
-  const [providerId, setProviderId] = useState<ProviderId>('typesafe');
+  const [providerId, setProviderId] = useState<ProviderId | ''>('');
   const [modelId, setModelId] = useState('');
   const [consentChecked, setConsentChecked] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -359,13 +369,16 @@ export function OptionsSurface({
     state.settings?.provider === providerId && state.settings.model === modelId;
   const savedProvider = state.settings?.provider;
   const savedModel = state.settings?.model;
+  const recipient = environment.providers.find(
+    (item) => item.id === savedProvider,
+  );
   const canConfigure = provider?.available === true && modelId !== '';
   useEffect(() => {
     void controller.start();
     return () => controller.dispose();
   }, [controller]);
   useEffect(() => {
-    setProviderId(savedProvider ?? 'typesafe');
+    setProviderId(savedProvider ?? '');
     setModelId(savedModel ?? '');
     setConsentChecked(false);
     credentialForm.current?.reset();
@@ -382,6 +395,14 @@ export function OptionsSurface({
     state.test === 'passed' &&
     state.permission &&
     state.status?.credentialConfigured;
+  const hasConsent = state.status?.consentGranted === true;
+  const canEnterKey =
+    !state.busy &&
+    configured &&
+    state.permission &&
+    environment.credentialEntry &&
+    environment.mode === 'connected' &&
+    state.status?.error?.code !== 'storage_unavailable';
   const preferences = state.settings && (
     <PreferencesForm
       key={state.dataRevision}
@@ -402,8 +423,8 @@ export function OptionsSurface({
       )}
       {!localOnly && (
         <p>
-          Choose categories, connect your own provider, then explicitly consent.
-          Until you enable filtering, your feed stays untouched.
+          Connect your provider, choose the posts to hide, and review what
+          leaves your browser. Filtering starts when you enable it.
         </p>
       )}
       {state.loading && <p role="status">Loading settings…</p>}
@@ -451,16 +472,12 @@ export function OptionsSurface({
               seconds.
             </p>
           )}
-          {(!localOnly || state.status.enabled) && (
+          {state.status.enabled && (
             <Button
-              disabled={
-                state.busy ||
-                (!state.status.enabled &&
-                  (!ready || state.settings?.consent?.status !== 'granted'))
-              }
-              onClick={() => void controller.setEnabled(!state.status?.enabled)}
+              disabled={state.busy}
+              onClick={() => void controller.setEnabled(false)}
             >
-              {state.status.enabled ? 'Pause filtering' : 'Enable filtering'}
+              Pause filtering
             </Button>
           )}
         </section>
@@ -479,7 +496,7 @@ export function OptionsSurface({
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            if (canConfigure)
+            if (canConfigure && providerId)
               void controller.selectProvider(providerId, modelId);
           }}
         >
@@ -490,7 +507,7 @@ export function OptionsSurface({
                 value={providerId}
                 disabled={state.busy}
                 onChange={(event) => {
-                  const id = event.target.value as ProviderId;
+                  const id = event.target.value as ProviderId | '';
                   setProviderId(id);
                   setModelId(
                     environment.providers.find((item) => item.id === id)
@@ -498,6 +515,7 @@ export function OptionsSurface({
                   );
                 }}
               >
+                <option value="">Choose a provider</option>
                 {environment.providers.map((item) => (
                   <option value={item.id} key={item.id}>
                     {item.label}
@@ -513,7 +531,7 @@ export function OptionsSurface({
                 disabled={state.busy || !provider?.available}
                 onChange={(event) => setModelId(event.target.value)}
               >
-                <option value="">Select a verified model</option>
+                <option value="">Choose a model</option>
                 {provider?.models.map((model) => (
                   <option key={model.id} value={model.id}>
                     {model.label}
@@ -540,7 +558,7 @@ export function OptionsSurface({
         <p>
           {state.permission && configured
             ? 'Host access granted.'
-            : `Grant optional access to ${provider?.permissionLabel ?? 'the verified provider host'}. A browser permission is separate from transmission consent.`}
+            : `Grant the browser permissions for ${provider?.permissionLabel ?? 'your selected provider'}. You will review consent for sending feed text separately.`}
         </p>
         <Button
           disabled={
@@ -557,9 +575,9 @@ export function OptionsSurface({
         </Button>
         <h3>Enter a session credential</h3>
         <p>
-          Only the privileged extension broker receives the key. It is kept for
-          the browser session and may require re-entry after restart. It is
-          excluded from settings and diagnostic previews.
+          Your API key stays in extension session storage and authenticates
+          requests to your selected provider. Closing the browser clears the
+          key. Enter it again after restarting the browser.
         </p>
         <form
           ref={credentialForm}
@@ -574,7 +592,7 @@ export function OptionsSurface({
           }}
         >
           <label>
-            Provider credential
+            Provider API key
             <input
               name="credential"
               type="password"
@@ -582,25 +600,10 @@ export function OptionsSurface({
               spellCheck={false}
               maxLength={4096}
               required
-              disabled={
-                state.busy ||
-                !configured ||
-                !state.permission ||
-                !environment.credentialEntry ||
-                environment.mode !== 'connected'
-              }
+              disabled={!canEnterKey}
             />
           </label>
-          <Button
-            type="submit"
-            disabled={
-              state.busy ||
-              !configured ||
-              !state.permission ||
-              !environment.credentialEntry ||
-              environment.mode !== 'connected'
-            }
-          >
+          <Button type="submit" disabled={!canEnterKey}>
             Save session credential
           </Button>
         </form>
@@ -643,7 +646,7 @@ export function OptionsSurface({
             : state.test === 'failed'
               ? 'Connection test failed. Review the error and try again.'
               : state.test === 'pending'
-                ? 'Waiting for the connection test. Filtering stays off.'
+                ? 'Waiting for the connection test.'
                 : 'Connection has not been tested in this settings session.'}
         </p>
       </SetupSection>
@@ -654,35 +657,45 @@ export function OptionsSurface({
         collapsed={localOnly && state.settings?.consent?.status !== 'granted'}
       >
         <p>
-          Recipient: {provider?.recipientId ?? 'Select a provider'}. Data:
-          rendered post text and classification instructions. Purpose: classify
-          post categories to apply your rules. Provider billing and retention
-          policies apply. Clearing extension data cannot delete text already
-          sent to a provider.
+          When filtering is enabled,{' '}
+          {recipient?.label ?? 'your chosen provider'} receives visible post
+          text and classification instructions to apply your rules on the
+          desktop LinkedIn home feed. Provider billing and retention policies
+          apply. Clearing extension data only clears this browser.
         </p>
-        {provider?.retentionUrl ? (
+        {environment.mode === 'connected' && (
           <p>
-            <a href={provider.retentionUrl} target="_blank" rel="noreferrer">
-              Read {provider.label} retention policy
+            Messages, comments and author details are excluded from extraction.
+            Post text itself can contain names and other personal information.
+            Classification thresholds are experimental and can hide a post
+            incorrectly. Use Reveal to read it again.
+          </p>
+        )}
+        {recipient?.retentionUrl ? (
+          <p>
+            <a href={recipient.retentionUrl} target="_blank" rel="noreferrer">
+              Read about {recipient.label} data handling
             </a>
           </p>
         ) : (
           <p>
             {environment.mode === 'demo'
               ? 'This simulation has no recipient and retains no data after you exit the demo.'
-              : 'A verified provider retention disclosure is required before consent is available.'}
+              : 'Save your provider to review its data handling and record consent.'}
           </p>
         )}
         <label className="ci-check">
           <input
             type="checkbox"
-            checked={consentChecked}
-            disabled={state.busy || !ready}
+            checked={hasConsent || consentChecked}
+            disabled={state.busy || !ready || hasConsent}
             onChange={(event) => setConsentChecked(event.target.checked)}
           />
           I agree to send rendered post text and classification instructions to{' '}
-          {provider?.label ?? 'the selected provider'} for category
+          {recipient?.label ?? 'the selected provider'} for category
           classification and understand possible charges and provider retention.
+          {environment.mode === 'connected' &&
+            ' I want to use these experimental filters.'}
         </label>
         <div className="ci-actions">
           <Button
@@ -690,11 +703,12 @@ export function OptionsSurface({
               state.busy ||
               !ready ||
               !consentChecked ||
-              (!provider?.retentionUrl && environment.mode !== 'demo')
+              hasConsent ||
+              (!recipient?.retentionUrl && environment.mode !== 'demo')
             }
             onClick={() => void controller.consent(true)}
           >
-            Record consent
+            {hasConsent ? 'Consent recorded' : 'Record consent'}
           </Button>
           <Button
             className="ci-secondary"
@@ -708,6 +722,26 @@ export function OptionsSurface({
             Withdraw consent
           </Button>
         </div>
+        {!localOnly && !state.status?.enabled && (
+          <Button
+            disabled={state.busy || !ready || !hasConsent}
+            onClick={() => void controller.setEnabled(true)}
+          >
+            Enable filtering
+          </Button>
+        )}
+        {hasConsent &&
+          state.settings &&
+          !Object.entries(state.settings.categoryModes).some(
+            ([id, mode]) =>
+              mode === 'hide' &&
+              (environment.mode !== 'connected' || id !== 'sponsored'),
+          ) && (
+            <p>
+              Choose Hide for at least one{' '}
+              <a href="#categories-title">category</a> to start filtering posts.
+            </p>
+          )}
         <p>
           Declining leaves your feed untouched. Withdraw consent or pause at any
           time to stop new requests and restore hidden posts.

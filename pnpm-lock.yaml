@@ -217,9 +217,21 @@ importers:
       '@clearedin/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@clearedin/decision-engine':
+        specifier: workspace:*
+        version: link:../../packages/decision-engine
+      '@clearedin/linkedin-adapter':
+        specifier: workspace:*
+        version: link:../../packages/linkedin-adapter
+      '@clearedin/providers':
+        specifier: workspace:*
+        version: link:../../packages/providers
       '@clearedin/storage':
         specifier: workspace:*
         version: link:../../packages/storage
+      '@clearedin/taxonomy':
+        specifier: workspace:*
+        version: link:../../packages/taxonomy
       '@clearedin/ui':
         specifier: workspace:*
         version: link:../../packages/ui

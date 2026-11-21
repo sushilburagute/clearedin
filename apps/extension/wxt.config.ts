@@ -1,10 +1,14 @@
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'wxt';
+import { FIREFOX_DATA_PERMISSIONS, LIVE_PROVIDERS } from './src/live-providers';
 
 // WXT forwards these to unimport/unplugin, but its public type omits the
 // plugin's exclude option. Keep a structural value with the shared dirs field.
 const explicitImports = { dirs: [], exclude: [/.*/] };
+const providerOrigins = Object.values(LIVE_PROVIDERS).map(
+  ({ origin }) => origin,
+);
 
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
@@ -33,9 +37,10 @@ export default defineConfig({
   manifest: ({ browser }) => ({
     name: 'ClearedIn Development',
     description:
-      'Development preview with local category settings and synthetic demos. Live filtering is unavailable.',
+      'Choose which LinkedIn home-feed posts to hide using your own provider key. Filtering starts only after setup and consent.',
     action: { default_icon: { 16: 'icon/16.png', 32: 'icon/32.png' } },
     permissions: ['storage'],
+    optional_host_permissions: providerOrigins.map((origin) => origin + '/*'),
     ...(browser === 'firefox'
       ? {
           browser_specific_settings: {
@@ -43,14 +48,23 @@ export default defineConfig({
               // Development identity only. Review before public distribution.
               id: 'development@clearedin.invalid',
               strict_min_version: '140.0',
-              // No remote data transmission. Revisit before enabling providers.
-              data_collection_permissions: { required: ['none'] },
+              data_collection_permissions: {
+                required: ['none'],
+                optional: FIREFOX_DATA_PERMISSIONS,
+              },
             },
           },
         }
       : {}),
     content_security_policy: {
-      extension_pages: "script-src 'self'; object-src 'self'",
+      extension_pages: [
+        "default-src 'self'",
+        "script-src 'self'",
+        "object-src 'none'",
+        "base-uri 'none'",
+        "form-action 'none'",
+        'connect-src ' + providerOrigins.join(' '),
+      ].join('; '),
     },
   }),
 });

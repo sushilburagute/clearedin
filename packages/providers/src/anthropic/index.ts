@@ -8,13 +8,14 @@ import {
   type PublicError,
 } from '@clearedin/contracts';
 import { buildClassificationPrompt } from '@clearedin/taxonomy';
+import { PROVIDER_CATALOG } from '../catalog';
 
 export const ANTHROPIC_CAPABILITIES = Object.freeze({
   provider: 'anthropic',
-  model: 'claude-haiku-4-5-20251001',
+  model: PROVIDER_CATALOG.anthropic.model,
   apiVersion: '2026-10-21',
   adapterVersion: '1.0.0',
-  endpoint: 'https://api.anthropic.com/v1/messages',
+  endpoint: PROVIDER_CATALOG.anthropic.endpoint,
   permissionHost: 'https://api.anthropic.com/*',
   scoreKind: 'self_reported',
   maxOutputTokens: 1024,

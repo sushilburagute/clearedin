@@ -24,7 +24,7 @@ Reviewers building directly from the source ZIP can use the commands, asset file
 
 ## Reviewer walkthrough
 
-1. Inspect both manifests for storage permission, the feed-scoped inert content script, local-code CSP, and absence of provider host access.
+1. Inspect both manifests for storage permission, exact desktop home-feed matches, local-code CSP, and optional origins limited to the three pinned providers. Check the Firefox declarations for optional authentication and website content.
 2. In disposable profiles, verify local save, reopen, and reset. Run the [settings smoke checks](../testing-and-evaluation.md#browser-checks). Open and exit the synthetic setup demo and confirm that real preferences are intact.
 3. Exercise hide, protect, reveal, pause, and reset on the synthetic website. Use the [accessibility protocol](../../tests/accessibility/README.md) for keyboard, screen-reader, zoom, dark mode, and forced-color checks.
 4. Confirm the package’s actual network behavior and permissions match its privacy disclosure. Use synthetic content in reviewer screenshots. Record browser versions, artifact hashes, results, and known limitations.

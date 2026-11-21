@@ -18,9 +18,51 @@ import {
   createSyntheticInput,
   SYNTHETIC_MODEL,
 } from '@clearedin/test-fixtures/fake-classifier';
+import { watchFeedRoot } from '../../apps/extension/src/content/watch-root';
+import { watchFeedNavigation } from '../../apps/extension/src/content/navigation';
 import { createContentSession } from '../../apps/extension/src/content/session';
 
 afterEach(() => vi.useRealTimers());
+
+describe('desktop home feed navigation', () => {
+  it.each([true, false])(
+    'observes a committed navigation, suspends in the back-forward cache and disposes (navigation API: %s)',
+    async (nativeNavigation) => {
+      vi.useFakeTimers();
+      const page = Object.assign(new EventTarget(), {
+        location: new URL('https://www.linkedin.com/feed?sort=recent'),
+        ...(nativeNavigation ? { navigation: new EventTarget() } : {}),
+      });
+      const signal = new AbortController();
+      const leave = vi.fn();
+      const enter = vi.fn(() => leave);
+      watchFeedNavigation(page, enter, signal.signal);
+      expect(enter).toHaveBeenCalledTimes(1);
+      const navigate = async (path: string) => {
+        page.location.href = new URL(path, page.location).href;
+        page.navigation?.dispatchEvent(new Event('currententrychange'));
+        await vi.advanceTimersByTimeAsync(400);
+      };
+      await navigate('/feed/update/123');
+      expect(leave).toHaveBeenCalledTimes(1);
+      await navigate('/in/someone');
+      expect(enter).toHaveBeenCalledTimes(1);
+      await navigate('/feed/');
+      expect(enter).toHaveBeenCalledTimes(2);
+      page.dispatchEvent(new Event('pagehide'));
+      expect(leave).toHaveBeenCalledTimes(2);
+      await navigate('/feed?sort=other');
+      expect(enter).toHaveBeenCalledTimes(2);
+      page.dispatchEvent(new Event('pageshow'));
+      expect(enter).toHaveBeenCalledTimes(3);
+      signal.abort();
+      await navigate('/feed/');
+      expect(enter).toHaveBeenCalledTimes(3);
+      expect(leave).toHaveBeenCalledTimes(3);
+      expect(vi.getTimerCount()).toBe(0);
+    },
+  );
+});
 async function harness(
   options: {
     deferred?: boolean;
@@ -65,7 +107,7 @@ async function harness(
     enablementGeneration: 1,
     provider: 'typesafe',
     model: SYNTHETIC_MODEL,
-    credentialConfigured: false,
+    credentialConfigured: true,
     consentGranted: true,
     categoryModes: { ...createDefaultCategoryModes(), engagement_bait: 'hide' },
     state: 'ready',
@@ -116,16 +158,27 @@ async function harness(
     },
   };
   let sequence = 0;
+  const thresholds = createExperimentalThresholdProfile(
+    'typesafe',
+    SYNTHETIC_MODEL,
+  );
+  const watch = vi.fn((changed: (root: Element | null) => void) =>
+    watchFeedRoot(document, changed),
+  );
   const session = createContentSession({
     adapter,
     client,
     evaluate: createVisibilityEvaluator({ allowExperimental: true }),
-    thresholds: createExperimentalThresholdProfile('typesafe', SYNTHETIC_MODEL),
+    thresholds: (current) =>
+      current.provider === thresholds.provider &&
+      current.model === thresholds.model
+        ? thresholds
+        : null,
     supportedRoute: () => true,
-    rescan: () => adapter.discover(),
+    watchRoot: watch,
     requestId: () => `request-${++sequence}`,
   });
-  await session.start(root);
+  await session.start();
   await vi.advanceTimersByTimeAsync(40);
   intersect?.(
     [
@@ -139,6 +192,7 @@ async function harness(
   await vi.advanceTimersByTimeAsync(40);
   return {
     root,
+    watch,
     setReadStatus(next: PublicStatus) {
       readStatus = next;
     },
@@ -275,45 +329,24 @@ describe('real DOM adapter + content session + synthetic classifier + policy', (
     expect(h.root.innerHTML).toBe(h.original);
     h.session.dispose();
   });
-  it('uses the current result for same-generation rule changes and refreshes placeholder reasons', async () => {
-    const h = await harness({ sponsored: true });
-    const article = h.root.querySelector('article')!;
-    const placeholder = h.root.querySelector(
-      '[data-clearedin-owned="placeholder"]',
-    )!;
-    h.update({
-      categoryModes: { ...createDefaultCategoryModes(), sponsored: 'hide' },
-    });
-    expect(h.root.querySelector('[data-clearedin-owned="placeholder"]')).toBe(
-      placeholder,
-    );
-    expect(
-      placeholder.shadowRoot!.querySelector('span')!.textContent,
-    ).toContain('Sponsored');
+  it('reuses current results when an organic category is protected', async () => {
+    const h = await harness();
     h.update({
       categoryModes: {
         ...h.status.categoryModes,
         engagement_bait: 'always_show',
-        sponsored: 'hide',
-      },
-    });
-    expect(article.hidden).toBe(false);
-    h.update({ categoryModes: h.status.categoryModes });
-    expect(article.hidden).toBe(true);
-    expect(h.requests).toEqual(['GET_PUBLIC_STATUS', 'CLASSIFY_POST']);
-    h.session.dispose();
-  });
-  it('uses in-flight results with the latest preferences, and cancels work once local rules settle the decision', async () => {
-    const h = await harness({ sponsored: true, deferred: true });
-    h.update({
-      categoryModes: {
-        ...h.status.categoryModes,
-        sponsored: 'hide',
-        engagement_bait: 'always_show',
+        technical_content: 'hide',
       },
     });
     expect(h.root.querySelector('article')!.hidden).toBe(false);
+    h.update({ categoryModes: h.status.categoryModes });
+    expect(h.root.querySelector('article')!.hidden).toBe(true);
     expect(h.requests).toEqual(['GET_PUBLIC_STATUS', 'CLASSIFY_POST']);
+    h.session.dispose();
+  });
+  it('cancels an in-flight request when the last organic hide rule is cleared', async () => {
+    const h = await harness({ deferred: true });
+    expect(h.root.querySelector('article')!.hidden).toBe(false);
     h.update({
       categoryModes: { ...createDefaultCategoryModes(), sponsored: 'hide' },
     });
@@ -322,10 +355,9 @@ describe('real DOM adapter + content session + synthetic classifier + policy', (
       'CLASSIFY_POST',
       'CANCEL_SUBSCRIPTION',
     ]);
-    expect(h.root.querySelector('article')!.hidden).toBe(true);
     h.deliver();
     await vi.advanceTimersByTimeAsync(1);
-    expect(h.root.querySelector('article')!.hidden).toBe(true);
+    expect(h.root.innerHTML).toBe(h.original);
     h.session.dispose();
   });
   it('ignores progress-only broadcasts after an unsuccessful classification', async () => {
@@ -343,52 +375,47 @@ describe('real DOM adapter + content session + synthetic classifier + policy', (
     h.root.replaceWith(nextRoot);
     h.setReadStatus({ ...h.status, enabled: false });
     const observe = vi.spyOn(h.adapter, 'observe');
-    await h.session.start(nextRoot);
+    await vi.advanceTimersByTimeAsync(450);
     expect(observe).not.toHaveBeenCalled();
     expect(nextRoot.innerHTML).toBe('');
     h.session.dispose();
   });
-  it('keeps a sponsored post visible while a remote Always show rule is pending', async () => {
+  it('keeps disclosed sponsored posts visible and local under all rule combinations', async () => {
     const h = await harness({
       sponsored: true,
-      deferred: true,
       status: {
         categoryModes: {
           ...createDefaultCategoryModes(),
           sponsored: 'hide',
-          engagement_bait: 'always_show',
+          engagement_bait: 'hide',
         },
       },
     });
-    expect(h.requests).toContain('CLASSIFY_POST');
-    expect(h.root.querySelector('article')!.hasAttribute('hidden')).toBe(false);
-    h.deliver();
-    await vi.advanceTimersByTimeAsync(1);
-    expect(h.root.querySelector('article')!.hasAttribute('hidden')).toBe(false);
+    expect(h.root.querySelector('article')!.hidden).toBe(false);
+    expect(h.requests).toEqual(['GET_PUBLIC_STATUS']);
     h.session.dispose();
   });
-  it.each([true, false])(
-    'keeps a reliable local sponsored decision when remote inference is unavailable (partial %s)',
-    async (partial) => {
-      const h = await harness({
-        text: partial ? 'Partial…' : 'Complete text.',
-        sponsored: true,
-        failClassification: true,
-        status: {
-          categoryModes: {
-            ...createDefaultCategoryModes(),
-            sponsored: 'hide',
-            technical_content: 'always_show',
-          },
-        },
-      });
-      expect(h.root.querySelector('article')!.hasAttribute('hidden')).toBe(
-        true,
-      );
-      expect(h.requests.includes('CLASSIFY_POST')).toBe(!partial);
-      h.session.dispose();
-    },
-  );
+  it('does not look for feed roots before consent or after withdrawal', async () => {
+    const h = await harness({ status: { consentGranted: false } });
+    expect(h.watch).not.toHaveBeenCalled();
+    h.update({ consentGranted: true, enablementGeneration: 2 });
+    expect(h.watch).toHaveBeenCalledTimes(1);
+    h.update({ consentGranted: false, enablementGeneration: 3 });
+    const replacement = h.root.cloneNode(true) as HTMLElement;
+    h.root.replaceWith(replacement);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(h.requests).toEqual(['GET_PUBLIC_STATUS']);
+    expect(replacement.innerHTML).toBe(h.original);
+    h.session.dispose();
+  });
+  it('restores immediately on a switch to an unsupported model', async () => {
+    const h = await harness();
+    const watchCount = h.watch.mock.calls.length;
+    h.update({ model: 'unsupported', enablementGeneration: 2 });
+    expect(h.root.innerHTML).toBe(h.original);
+    expect(h.watch).toHaveBeenCalledTimes(watchCount);
+    h.session.dispose();
+  });
   it('restores on teardown and ignores older status broadcasts', async () => {
     const h = await harness();
     h.pause();

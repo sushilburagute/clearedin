@@ -13,9 +13,10 @@ import {
   PROMPT_VERSION,
   TAXONOMY_VERSION,
 } from '@clearedin/taxonomy';
+import { PROVIDER_CATALOG } from '../catalog';
 
-export const TYPESAFE_MODEL = 'jev-1.14.0';
-const ENDPOINT = 'https://api.typesafe.ai/v1/systemone';
+export const TYPESAFE_MODEL = PROVIDER_CATALOG.typesafe.model;
+const ENDPOINT = PROVIDER_CATALOG.typesafe.endpoint;
 export const typesafeCapabilities = Object.freeze({
   provider: 'typesafe',
   model: TYPESAFE_MODEL,

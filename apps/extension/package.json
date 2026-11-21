@@ -14,7 +14,11 @@
   },
   "dependencies": {
     "@clearedin/contracts": "workspace:*",
+    "@clearedin/decision-engine": "workspace:*",
+    "@clearedin/linkedin-adapter": "workspace:*",
+    "@clearedin/providers": "workspace:*",
     "@clearedin/storage": "workspace:*",
+    "@clearedin/taxonomy": "workspace:*",
     "@clearedin/ui": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1",
