@@ -1,6 +1,6 @@
 # Store reviewer notes for the desktop development preview
 
-**Package purpose.** ClearedIn Development lets users configure category rules in browser-local settings and try them in a synthetic setup demo. Live feed filtering and provider connections are unavailable in version 0.1.0. The reviewer walkthrough works in a fresh profile without accounts, sample posts or API keys.
+ClearedIn Development lets the installing user filter organic posts on the desktop LinkedIn home feed. In extension settings, select a provider, grant the browser permission, save a session key, test with a synthetic post, select category rules, then consent and enable. The separate setup simulation works without an account or key. The product run on a synthetic feed exercises the real package with an offline provider. [Chrome walkthrough](../../experiments/browser-feasibility/evidence/chrome-feed-onboarding.md)
 
 ## Rebuild the submitted ZIPs
 
@@ -22,10 +22,11 @@ Compare the SHA-256 of each resulting `apps/extension/.output/clearedinextension
 | Field | Evidence for this preview |
 | --- | --- |
 | Store packages | Use the browser-specific ZIP identified in the inventory. AMO also needs `repository-source.zip` and the build instructions above. Select desktop platforms when evaluating this build. |
-| Short description | Save category rules locally and explore a synthetic setup demo. Live filtering is unavailable in this development preview. |
-| Storage permission | Retains preferences such as category choices and usage limits within the browser profile. In settings, confirm Clear all data and reopen to see the defaults. |
-| LinkedIn match | The manifest registers an empty application content-script entry point at `https://www.linkedin.com/feed/*`. WXT wraps it with lifecycle code. The preview does not extract posts or modify the feed. Decide whether this match belongs in the final product before justifying any site access to reviewers. |
-| Remote code and data | Extension scripts ship in the package. The extension-page CSP limits scripts and objects to self. The preview requests no provider hosts, accepts no real credentials and transmits no posts. Firefox declares `data_collection_permissions.required: ["none"]`. The public website is a separate surface. |
+| Short description | Choose which organic LinkedIn home-feed posts to collapse, using your own provider key and category rules. |
+| Storage permission | Stores preferences, consent and request counts locally. The selected provider key is held in privileged browser-session storage. Disconnect forgets the key. Clear all data resets local state. |
+| LinkedIn match | Only the top-frame desktop home feed at `www.linkedin.com/feed` or `/feed/`, including query variants, matches. Activated filters classify selected rendered post text. Recognized sponsored posts are excluded. Users can reveal collapsed posts or pause filtering. |
+| Optional host permissions | The user grants access to their selected API origin for TypeSafe Jev, OpenAI or Anthropic. A fixed synthetic request tests that connection. Remote classification can incur charges on the user's account. |
+| Remote code and data | Code ships inside the ZIP. The CSP restricts API connections to the three provider origins and blocks remote scripts, objects and form submissions. Firefox declares optional `authenticationInfo` and `websiteContent` with no required data collection. Processing feed text requires an additional in-extension consent and enable action. The website has separate data practices. |
 | Contact and policy | The project lists support@sush.dev and publishes its [support page](https://clearedin.sush.dev/support/) and [privacy page](https://clearedin.sush.dev/privacy/). Verify these against the authorized release and publisher disclosures. |
 | Artwork | Use the [128 px icon](../../apps/extension/public/icon/128.png) and [1280 × 800 options screenshot](assets/options-1280x800.png). Suggested caption — “Category preferences saved locally in the development preview.” The image shows default rules in a disposable profile. |
 
@@ -35,12 +36,12 @@ The publisher selects the public identity, license, final listing, distribution 
 
 `pnpm release:amo` runs Mozilla's **addons-linter 10.16.0** locally against the inventoried Firefox ZIP after checking its digest. It writes the complete JSON result, validator version and package hash to `.release/amo-validation.json`. The validator and its dependencies have a separate frozen lockfile and install with lifecycle scripts disabled. The measured Windows install resolved 185 packages for validation. An ordinary developer or reviewer build installs none of these additional packages. [Mozilla validator](https://github.com/mozilla/addons-linter)
 
-The Windows run recorded **0 errors, 0 notices and 5 warnings**. CI fails on validator errors or warning codes, bundle names or counts outside the reviewed set. Review source locations again for each candidate, even when counts match.
+The Windows validation of the home-feed build recorded **0 errors, 0 notices and 6 warnings**. CI fails on errors or warnings outside the reviewed files, codes and counts. Review the source locations for each candidate.
 
 | Count | Finding | Review disposition |
 | --- | --- | --- |
 | 1 | Android minimum version | Desktop Firefox 140 supports the declared data-consent key. Android support starts at 142. Desktop is the tested target. Android needs its own minimum version decision and device testing before selection. [Mozilla compatibility](https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/) |
-| 2 | `DANGEROUS_EVAL` in background and shared UI | Both point to Zod's empty-string `Function` capability probe. The [extension build entry](../../apps/extension/build/zod-csp.ts) configures Zod's interpreted parser before the application constructs its schemas. Zod skips the probe when `jitless` is set. Static scanning still sees the library branch. |
+| 3 | `DANGEROUS_EVAL` in the background, feed content script and shared UI | All three point to Zod's empty-string `Function` capability probe. The [extension build entry](../../apps/extension/build/zod-csp.ts) configures the interpreted parser before schema construction. Zod skips the probe when `jitless` is set. Static scanning still sees the library branch. |
 | 2 | `UNSAFE_VAR_ASSIGNMENT` in shared UI | Both point to React DOM's implementation of `dangerouslySetInnerHTML`. The extension and shared UI do not supply that prop. Check again when changing React or the rendering paths. |
 
 AMO performs its own validation and review after an authorized upload.

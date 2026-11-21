@@ -50,6 +50,7 @@ assert.equal(report.summary.errors, 0);
 const reviewed = new Map([
   ['manifest.json KEY_FIREFOX_ANDROID_UNSUPPORTED_BY_MIN_VERSION', 1],
   ['background.js DANGEROUS_EVAL', 1],
+  ['content-scripts/content.js DANGEROUS_EVAL', 1],
   ['chunks/bootstrap.js DANGEROUS_EVAL', 1],
   ['chunks/bootstrap.js UNSAFE_VAR_ASSIGNMENT', 2],
 ]);
