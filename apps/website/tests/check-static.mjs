@@ -14,8 +14,21 @@ for (const file of files) {
   assert.match(html, /lang="en"/);
   assert.match(html, /name="description"/);
   assert.match(html, /name="viewport"/);
-  assert.match(html, /noindex/);
+  const shouldIndex =
+    process.env.VERCEL_ENV === 'production' && file !== '404.html';
+  assert.equal(
+    /<meta name="robots" content="noindex"/.test(html),
+    !shouldIndex,
+    file,
+  );
   assert.match(html, /Skip to content/);
+  const analyticsScripts =
+    html.match(/<script\b[^>]*\bsrc="\/tag-manager\.js"/g) ?? [];
+  assert.equal(
+    analyticsScripts.length,
+    process.env.VERCEL_ENV === 'preview' ? 0 : 1,
+    file,
+  );
   // Inline executable scripts and style blocks would be blocked by public/_headers.
   assert.doesNotMatch(html, /<script\b(?![^>]*\bsrc=)[^>]*>|<style\b/i);
   assert.doesNotMatch(html, /type="password"|api[_-]?key/i);

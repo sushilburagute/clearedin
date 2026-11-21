@@ -26,6 +26,14 @@ export function Guide({ page }: { page: (typeof pages)[number] }) {
         <div className="guide-intro">
           <h1>{page.title}</h1>
           <p>{page.description}</p>
+          {(faq || page.slug === 'privacy') && (
+            <p>
+              {faq ? 'For help, email ' : 'For privacy questions, email '}
+              <a href="mailto:support@sush.dev">support@sush.dev</a> or send a
+              direct message to{' '}
+              <a href="https://x.com/sush_dev">@sush_dev on X</a>.
+            </p>
+          )}
         </div>
         <div className="guide-sections">
           {page.sections.map((section) =>

@@ -194,7 +194,6 @@ svg {
   padding: 35px 0 38px clamp(26px, 4vw, 54px);
   z-index: 1;
 }
-.hero-label,
 .overline {
   display: flex;
   align-items: center;
@@ -202,22 +201,25 @@ svg {
   font-weight: 600;
   font-size: 0.85rem;
 }
-.hero-label {
-  color: #d6eaff;
-  margin-bottom: 14px;
-}
 .hero h1 {
   font-size: clamp(2.85rem, 5.25vw, 4.8rem);
   letter-spacing: -0.062em;
   font-weight: 650;
   line-height: 1.02;
 }
-.hero-copy > p:not(.hero-label) {
+.hero-description {
   font-size: 1.08rem;
   line-height: 1.55;
   max-width: 41ch;
   color: #e1edfa;
   margin: 15px 0 23px;
+}
+.hero-note {
+  margin-top: 12px;
+  max-width: 42ch;
+  color: #e1edfa;
+  font-size: 0.86rem;
+  line-height: 1.5;
 }
 .preview-art {
   position: absolute;
@@ -480,6 +482,12 @@ svg {
   background: #f9ebd8;
   color: #82561e;
 }
+.post .post-avatar {
+  flex: none;
+  border-radius: 50%;
+  font-weight: 680;
+  font-size: 0.9rem;
+}
 .post-kind {
   display: flex;
   align-items: center;
@@ -545,24 +553,20 @@ svg {
   line-height: 1.13;
   font-weight: 610;
 }
-.post-bottom,
-.hidden-row {
+.post-bottom {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 4px 12px;
-  padding: 2px 22px;
+  padding: 6px 22px;
   border-top: 1px solid var(--line);
   font-size: 0.8rem;
 }
-.post-bottom span,
-.post-bottom a {
+.post-bottom a,
+.post-action,
+.hidden-reason {
   display: flex;
   align-items: center;
   gap: 7px;
-}
-.post-bottom span,
-.hidden-row span {
-  color: var(--muted);
 }
 .post-bottom a,
 .link,
@@ -577,14 +581,29 @@ svg {
 .all-rules:hover {
   text-decoration: underline;
 }
-.collapsed .post-top {
-  padding-bottom: 15px;
-}
 .link {
   background: none;
   border: 0;
   padding: 5px 0;
   font-size: inherit;
+}
+.post-bottom a {
+  color: var(--muted);
+  font-weight: 500;
+}
+.post-action {
+  padding-inline: 12px;
+  border-radius: 6px;
+  background: var(--soft);
+}
+.hidden-row {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 12px;
+  padding: 4px 22px;
+  background: var(--canvas);
+  color: var(--muted);
+  font-size: 0.84rem;
 }
 .quick,
 .demo-controls {
@@ -928,10 +947,7 @@ svg {
   .hero h1 {
     font-size: clamp(2.5rem, 8vw, 3.4rem);
   }
-  .hero-label {
-    margin-bottom: 10px;
-  }
-  .hero-copy > p:not(.hero-label) {
+  .hero-description {
     font-size: 0.95rem;
     margin: 12px 0 18px;
   }
@@ -956,9 +972,6 @@ svg {
   .demo-layout,
   .guide-layout {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .studio-aside {
-    grid-row: 1;
   }
   .rule-list {
     display: grid;

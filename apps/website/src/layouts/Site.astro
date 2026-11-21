@@ -8,8 +8,12 @@ interface Props {
   title: string;
   description: string;
   page: ReactElement;
+  indexable?: boolean;
 }
-const { title, description, page } = Astro.props;
+const { title, description, page, indexable = true } = Astro.props;
+const allowIndexing = process.env.VERCEL_ENV === 'production' && indexable;
+const enableAnalytics =
+  import.meta.env.PROD && process.env.VERCEL_ENV !== 'preview';
 const html = renderToString(
   createElement(Frame, { path: Astro.url.pathname, children: page }),
 );
@@ -19,8 +23,12 @@ const html = renderToString(
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    {enableAnalytics && <script is:inline async src="/tag-manager.js"></script>}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="robots" content="noindex" />
+    {!allowIndexing && <meta name="robots" content="noindex" />}
+    {indexable && (
+      <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    )}
     <meta name="description" content={description} />
     <meta name="theme-color" content="#0a66c2" />
     <link rel="icon" href="/mark.svg" type="image/svg+xml" />

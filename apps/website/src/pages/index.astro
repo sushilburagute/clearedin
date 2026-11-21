@@ -7,16 +7,36 @@ import { SYNTHETIC_FIXTURES } from '@clearedin/test-fixtures/fake-classifier';
 import { buildDemoPolicies } from '../demo-policy';
 const policies = await buildDemoPolicies();
 const samples = [
-  ['job-referral', 'job_posting', 'briefcase'],
-  ['engagement-bait', 'engagement_bait', 'chat'],
-  ['technical-launch', 'technical_content', 'code'],
-  ['consulting-milestone', 'promotion', 'spark'],
+  ['engagement-bait', 'engagement_bait', 'chat', 'Leo Park', 'Growth marketer'],
+  [
+    'job-referral',
+    'job_posting',
+    'briefcase',
+    'Mira Shah',
+    'Engineering manager',
+  ],
+  [
+    'technical-launch',
+    'technical_content',
+    'code',
+    'Jules Chen',
+    'Compiler engineer',
+  ],
+  [
+    'consulting-milestone',
+    'promotion',
+    'spark',
+    'Alex Reed',
+    'Independent database consultant',
+  ],
 ] as const;
 const props: StudioProps = {
-  posts: samples.map(([id, category, icon]) => ({
+  posts: samples.map(([id, category, icon, author, role]) => ({
     id,
     category,
     icon,
+    author,
+    role,
     label: CATEGORY_DEFINITION_BY_ID[category].label,
     text: SYNTHETIC_FIXTURES.find((post) => post.id === id)!.text.replace(
       '[Synthetic example] ',
@@ -38,8 +58,8 @@ const page = createElement(
 ---
 
 <Site
-  title="Feed studio"
-  description="Customize a sample LinkedIn feed with category rules and a job hunt preset."
+  title="Choose what you see on LinkedIn"
+  description="Try ClearedIn on a sample feed. Keep job openings visible, hide engagement bait, and reveal any post. No LinkedIn account or extension needed."
   page={page}
 >
   <script>

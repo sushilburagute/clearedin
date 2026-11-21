@@ -6,6 +6,8 @@ import { Icon, type IconName } from './Icon';
 export interface StudioPost {
   id: string;
   text: string;
+  author: string;
+  role: string;
   label: string;
   category: CategoryId;
   policy: DemoPolicy;
@@ -63,18 +65,18 @@ export function StudioHero() {
   return (
     <section className="hero">
       <div className="hero-copy">
-        <p className="hero-label">
-          <Icon name="sliders" size={15} />
-          LinkedIn feed customizer
-        </p>
-        <h1>Your feed, in focus.</h1>
-        <p>
-          Keep the opportunities and ideas you come for. Choose which posts make
-          it into your feed.
+        <h1>Choose what you see on LinkedIn.</h1>
+        <p className="hero-description">
+          Try it on a sample feed. Keep job openings visible, hide engagement
+          bait, and bring back any post with a click.
         </p>
         <a className="btn btn-white" href="#studio">
-          Customize your feed <Icon name="arrow" size={17} />
+          Try the sample feed <Icon name="arrow" size={17} />
         </a>
+        <p className="hero-note">
+          The browser extension is in development. This demo runs entirely on
+          this page.
+        </p>
       </div>
       <PreviewArt />
     </section>
@@ -90,7 +92,7 @@ export function Studio({ posts }: StudioProps) {
   const [rules, setRules] = useState<Rules>({});
   const [revealed, setRevealed] = useState<string[]>([]);
   const [ready, setReady] = useState(false);
-  const focusAfterReveal = useRef<string | null>(null);
+  const focusAfterAction = useRef<string | null>(null);
   const quickRules = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
     if (quickRules.current && window.matchMedia('(max-width: 700px)').matches)
@@ -98,11 +100,11 @@ export function Studio({ posts }: StudioProps) {
     setReady(true);
   }, []);
   useEffect(() => {
-    if (focusAfterReveal.current) {
-      document.getElementById('sample-' + focusAfterReveal.current)?.focus();
-      focusAfterReveal.current = null;
+    if (focusAfterAction.current) {
+      document.getElementById('sample-' + focusAfterAction.current)?.focus();
+      focusAfterAction.current = null;
     }
-  }, [revealed]);
+  }, [revealed, rules]);
   const outcomes = posts.map((p) =>
     revealed.includes(p.id)
       ? p.policy.revealed
@@ -129,18 +131,11 @@ export function Studio({ posts }: StudioProps) {
           <h2 id="studio" tabIndex={-1}>
             Feed studio
           </h2>
-          <p>Try a preset or tune individual categories on a sample feed.</p>
+          <p>
+            Try <strong>Job hunt</strong> or set a rule directly on a post.
+          </p>
         </div>
         <div className="presets" role="group" aria-label="Feed presets">
-          <button
-            type="button"
-            aria-pressed={!hasRules}
-            onClick={() => applyPreset(false)}
-            disabled={!ready}
-          >
-            <Icon name="grid" size={15} />
-            Everyday
-          </button>
           <button
             type="button"
             aria-pressed={isJobHunt}
@@ -150,6 +145,15 @@ export function Studio({ posts }: StudioProps) {
             <Icon name="briefcase" size={16} />
             Job hunt
           </button>
+          <button
+            type="button"
+            aria-pressed={!hasRules}
+            onClick={() => applyPreset(false)}
+            disabled={!ready}
+          >
+            <Icon name="grid" size={15} />
+            Show all
+          </button>
         </div>
       </div>
       <noscript>
@@ -158,60 +162,43 @@ export function Studio({ posts }: StudioProps) {
       <div className="studio-grid">
         <div className="post-list">
           <div className="feed-line">
-            <h3>Sample feed</h3>
+            <h3>Fictional sample feed</h3>
             <span role="status">
               {posts.length - hidden} visible · {hidden} hidden
             </span>
           </div>
           {posts.map((p, i) => {
             const outcome = outcomes[i]!;
-            const visibleLabel = revealed.includes(p.id)
-              ? 'Revealed'
-              : rules[p.category] === 'always_show'
-                ? 'Always show'
-                : 'Visible';
+            const isRevealed = revealed.includes(p.id);
+            const isProtected = rules[p.category] === 'always_show';
+            const offerProtection =
+              p.category === 'job_posting' ||
+              p.category === 'technical_content';
+            const suggestedMode = offerProtection ? 'always_show' : 'hide';
+            const undoProtection = offerProtection && isProtected;
             return (
               <article
                 key={p.id}
                 tabIndex={-1}
                 id={'sample-' + p.id}
+                aria-labelledby={'byline-' + p.id}
                 className={
                   'post panel tone-' +
                   p.icon +
                   (outcome.hidden ? ' collapsed' : '')
                 }
               >
-                <div className="post-top">
-                  <span className="post-avatar">
-                    <Icon name={p.icon} size={22} />
-                  </span>
-                  <div>
-                    <h4>{p.label}</h4>
-                    <span className="post-kind">
-                      Synthetic post <span aria-hidden="true">·</span>{' '}
-                      <Icon name="globe" size={12} />
-                    </span>
-                  </div>
-                  {!outcome.hidden && (
-                    <span className="state">
-                      <Icon
-                        name={
-                          rules[p.category] === 'always_show' ? 'shield' : 'eye'
-                        }
-                        size={13}
-                      />
-                      {visibleLabel}
-                    </span>
-                  )}
-                </div>
                 {outcome.hidden ? (
                   <div className="hidden-row">
-                    <span>{outcome.message}</span>
+                    <span className="hidden-reason">
+                      <Icon name="hide" size={18} />
+                      <span id={'byline-' + p.id}>{outcome.message}</span>
+                    </span>
                     <button
                       type="button"
                       className="link"
                       onClick={() => {
-                        focusAfterReveal.current = p.id;
+                        focusAfterAction.current = p.id;
                         setRevealed((prev) => [...prev, p.id]);
                       }}
                     >
@@ -220,6 +207,27 @@ export function Studio({ posts }: StudioProps) {
                   </div>
                 ) : (
                   <>
+                    <div className="post-top">
+                      <span className="post-avatar" aria-hidden="true">
+                        {p.author
+                          .split(' ')
+                          .map((name) => name[0])
+                          .join('')}
+                      </span>
+                      <div>
+                        <h4 id={'byline-' + p.id}>{p.author}</h4>
+                        <span className="post-kind">{p.role}</span>
+                      </div>
+                      {(isProtected || isRevealed) && (
+                        <span className="state">
+                          <Icon
+                            name={isRevealed ? 'eye' : 'shield'}
+                            size={13}
+                          />
+                          {isRevealed ? 'Revealed' : 'Always show'}
+                        </span>
+                      )}
+                    </div>
                     <p className="post-text">{p.text}</p>
                     {p.id === 'job-referral' && (
                       <div className="recruit-image">
@@ -230,26 +238,49 @@ export function Studio({ posts }: StudioProps) {
                           height="641"
                         />
                         <div>
-                          <span>Engineering team</span>
-                          <strong>We’re hiring.</strong>
+                          <span>Open role</span>
+                          <strong>Backend engineer</strong>
                         </div>
                       </div>
                     )}
                     <div className="post-bottom">
-                      <span>
-                        <Icon name={p.icon} size={14} />
-                        {p.label}
-                      </span>
                       <a
                         href={'#quick-' + p.category}
+                        aria-label={'Edit rule for ' + p.label}
                         onClick={() => {
                           if (quickRules.current)
                             quickRules.current.open = true;
                         }}
                       >
-                        <Icon name="sliders" size={14} />
-                        Edit rule
+                        <Icon name={p.icon} size={14} />
+                        {p.label}
                       </a>
+                      <button
+                        type="button"
+                        className="link post-action"
+                        disabled={!ready}
+                        aria-describedby={'byline-' + p.id}
+                        onClick={() => {
+                          focusAfterAction.current = p.id;
+                          setRevealed((prev) =>
+                            prev.filter((id) => id !== p.id),
+                          );
+                          setMode(
+                            p.category,
+                            undoProtection ? 'show' : suggestedMode,
+                          );
+                        }}
+                      >
+                        <Icon
+                          name={offerProtection ? 'shield' : 'hide'}
+                          size={15}
+                        />
+                        {undoProtection
+                          ? 'Remove protection'
+                          : offerProtection
+                            ? 'Always show this category'
+                            : 'Hide this category'}
+                      </button>
                     </div>
                   </>
                 )}
