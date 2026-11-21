@@ -1,6 +1,6 @@
 # Security and privacy
 
-**The preview stores local preferences and sends no feed text or credentials to a provider.** The website uses fixed examples and has no key collection or accounts. Production website builds load Google Tag Manager for Google Analytics. The extension requires only storage permission and has no provider host permissions.
+**The preview stores local preferences and sends no feed text or credentials to a provider.** The website uses fixed examples and has no key collection or accounts. Website analytics are off by default. On production, visitors can allow Google Analytics through Google Tag Manager and withdraw that choice in Analytics settings. Preview builds omit the loader. The extension requires only storage permission and has no provider host permissions.
 
 ## Conditions for live processing
 

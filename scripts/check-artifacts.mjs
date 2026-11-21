@@ -103,8 +103,8 @@ for (const browser of ['chrome', 'firefox']) {
 }
 const website = await readFile(resolve('apps/website/dist/index.html'), 'utf8');
 assert(
-  website.includes('Development preview'),
-  'Website must accurately state preview status',
+  website.includes('The extension is in development.'),
+  'Website must accurately state extension availability',
 );
 assert(!/<script[^>]+src=["']https?:/i.test(website));
 console.log(

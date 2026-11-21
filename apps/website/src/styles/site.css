@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   color-scheme: light dark;
   --canvas: #f5f5f7;
   --surface: #fff;
@@ -434,6 +434,11 @@ svg {
   border-radius: 17px;
   background: var(--surface);
 }
+.post-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
 .post.collapsed {
   align-self: start;
 }
@@ -759,6 +764,9 @@ svg {
 .guide section:last-child:nth-child(odd),
 .guide details {
   grid-column: 1 / -1;
+}
+#analytics-toggle {
+  margin-top: 16px;
 }
 .guide section h2,
 .guide summary {

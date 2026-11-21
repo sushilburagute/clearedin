@@ -27,7 +27,7 @@ for (const file of pages) {
     document.querySelector('meta[name="description"]')?.getAttribute('content'),
     file,
   );
-  assert(html.includes('Development preview'), file);
+  assert(html.includes('Public demo with fictional posts'), file);
   assert(
     !document.querySelector('input[type="password"]'),
     'Website must not collect keys',
